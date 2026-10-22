@@ -1,0 +1,1373 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="Interactive RF lab for the FCC Technician exam and LMR prep.">
+<title>RF Bench Lab</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+/* Layout: bench header, sticky module tabs, each module pairs a briefing column with an instrument panel, quiz below */
+:root{
+  --bg:#edf1f0; --panel:#fbfcfc; --sunk:#e2e8e6; --ink:#141f1b; --muted:#53625c; --line:#c7d1cd;
+  --fwd:#2150c0; --refl:#b26c06; --good:#21774a; --warn:#9f5b0c; --bad:#ad2e28;
+  --f-display:"Barlow Condensed","Arial Narrow","Roboto Condensed",sans-serif;
+  --f-body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0e1413; --panel:#151f1e; --sunk:#1c2827; --ink:#e1e9e6; --muted:#92a19b; --line:#2b3936;
+    --fwd:#88a6ff; --refl:#f0aa46; --good:#60c38c; --warn:#e6a058; --bad:#ef716a; color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0e1413; --panel:#151f1e; --sunk:#1c2827; --ink:#e1e9e6; --muted:#92a19b; --line:#2b3936;
+  --fwd:#88a6ff; --refl:#f0aa46; --good:#60c38c; --warn:#e6a058; --bad:#ef716a; color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{margin:0}
+[hidden]{display:none !important}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.55}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
+.wrap{max-width:1180px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+header.top .wrap{padding-block:28px 18px}
+.top-row{display:flex;flex-wrap:wrap;gap:16px 32px;align-items:flex-end;justify-content:space-between}
+.eyebrow,.label,.tag{font-family:var(--f-display);font-weight:600;text-transform:uppercase;letter-spacing:.09em;font-size:.82rem;color:var(--muted);margin:0}
+h1{font-family:var(--f-display);font-weight:700;font-size:clamp(2.4rem,6vw,3.6rem);line-height:.95;margin:6px 0 0;letter-spacing:-.01em;text-wrap:balance}
+.lede{max-width:62ch;color:var(--muted);margin:10px 0 0}
+.score{display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+.score .num{font-family:var(--f-mono);font-variant-numeric:tabular-nums;font-size:1.5rem;font-weight:600}
+.score .num small{font-size:.85rem;color:var(--muted);font-weight:400}
+nav.tabs{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);border-bottom:1px solid var(--line)}
+.tabs-inner{display:flex;gap:2px;overflow-x:auto;scrollbar-width:thin}
+.tab{flex:0 0 auto;font-family:var(--f-display);font-weight:600;font-size:1.02rem;text-transform:uppercase;letter-spacing:.04em;background:none;border:0;border-bottom:3px solid transparent;color:var(--muted);padding:12px 10px 9px;cursor:pointer;display:flex;gap:8px;align-items:center}
+.tab .n{font-family:var(--f-mono);font-size:.74rem;font-weight:500}
+.tab .s{font-family:var(--f-mono);font-size:.7rem;font-weight:500;padding:1px 6px;border-radius:99px;border:1px solid var(--line);letter-spacing:0}
+.tab .s.done{border-color:var(--good);color:var(--good)}
+.tab[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--fwd)}
+button:focus-visible,input:focus-visible,select:focus-visible,a:focus-visible{outline:2px solid var(--fwd);outline-offset:2px}
+main .wrap{padding-block:28px 40px}
+.module{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,7fr);gap:28px 36px;align-items:start}
+@media (max-width:880px){.module{grid-template-columns:minmax(0,1fr)}}
+.brief{display:grid;gap:16px;min-width:0}
+.brief h2{font-family:var(--f-display);font-weight:700;font-size:2.1rem;line-height:1;margin:4px 0 0;text-wrap:balance}
+.brief p{margin:0;max-width:62ch}
+.formulas{font-family:var(--f-mono);font-size:.84rem;background:var(--sunk);border-radius:8px;padding:12px 14px;display:grid;gap:4px;overflow-x:auto}
+.formulas div{white-space:nowrap}
+.predict,.qcard{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px 16px}
+.q-prompt{font-weight:600;margin:6px 0 10px !important}
+.opts{display:grid;gap:6px}
+.opt{text-align:left;font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:9px 12px;cursor:pointer}
+.opt:hover:not(:disabled){border-color:var(--fwd)}
+.opt:disabled{cursor:default}
+.opt.right{border-color:var(--good);color:var(--good);font-weight:600}
+.opt.wrong{border-color:var(--bad);color:var(--bad);text-decoration:line-through}
+.why{margin:10px 0 0 !important;font-size:.92rem}
+.v{font-weight:600}
+.v.ok{color:var(--good)}.v.no{color:var(--bad)}
+.bench{position:relative;background:var(--panel);border:1px solid var(--line);border-radius:12px;overflow:hidden;min-width:0}
+.bench-head{display:flex;justify-content:space-between;gap:4px 12px;flex-wrap:wrap;padding:10px 16px;border-bottom:1px solid var(--line);background:var(--sunk)}
+.bench-head .label{color:var(--ink)}
+.bench-head .note{margin:0}
+.bench-body{padding:16px;display:grid;gap:18px}
+.bench.locked .bench-body{filter:blur(3px);pointer-events:none;user-select:none}
+.lock{position:absolute;inset:0;display:grid;place-items:center;background:color-mix(in srgb,var(--panel) 70%,transparent);z-index:2;padding:16px;text-align:center}
+.lock .box{max-width:32ch;display:grid;gap:12px;justify-items:center}
+.lock p{margin:0;font-weight:600}
+.group{display:grid;gap:10px}
+.group + .group{border-top:1px dashed var(--line);padding-top:16px}
+.controls{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,150px),1fr));gap:12px 16px}
+.ctl{display:grid;gap:4px;min-width:0}
+.ctl label{font-size:.8rem;color:var(--muted);display:flex;justify-content:space-between;gap:8px}
+.ctl output{font-family:var(--f-mono);color:var(--ink);font-variant-numeric:tabular-nums}
+input[type=range]{width:100%;accent-color:var(--fwd);margin:4px 0}
+input[type=number],input[type=text],select{font:inherit;font-family:var(--f-mono);font-size:.9rem;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:6px 8px;width:100%;min-width:0}
+.readouts{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,122px),1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.ro{background:var(--panel);padding:8px 10px;min-width:0}
+.ro .k{font-size:.72rem;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-family:var(--f-display);font-weight:600}
+.ro .val{font-family:var(--f-mono);font-size:1.12rem;font-weight:600;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.ro .val small{font-size:.74rem;font-weight:400;color:var(--muted)}
+canvas.scope{width:100%;height:230px;display:block;background:var(--bg);border-radius:8px;border:1px solid var(--line)}
+.legend{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:.8rem;color:var(--muted);margin:0}
+.legend i{display:inline-block;width:14px;height:3px;border-radius:2px;vertical-align:middle;margin-right:6px}
+.chip{display:inline-block;font-family:var(--f-mono);font-size:.76rem;font-weight:500;padding:2px 8px;border-radius:99px;border:1px solid currentColor;white-space:nowrap}
+.chip.good{color:var(--good)}.chip.warn{color:var(--warn)}.chip.bad{color:var(--bad)}.chip.info{color:var(--fwd)}
+.btn{font:inherit;font-family:var(--f-display);font-weight:600;letter-spacing:.06em;text-transform:uppercase;font-size:.92rem;border:1px solid var(--ink);background:var(--ink);color:var(--bg);border-radius:6px;padding:8px 14px;cursor:pointer}
+.btn.ghost{background:transparent;color:var(--ink);border-color:var(--line)}
+.btn.ghost:hover{border-color:var(--ink)}
+.btn.small{font-size:.8rem;padding:5px 10px}
+.presets{display:flex;flex-wrap:wrap;gap:8px}
+.scopes{display:grid;grid-template-columns:minmax(0,2fr) minmax(0,1fr);gap:12px}
+@media (max-width:560px){.scopes{grid-template-columns:minmax(0,1fr)}}
+.pane{display:grid;gap:6px;min-width:0}
+.term{border-bottom:1.5px dotted var(--fwd);cursor:help;border-radius:2px}
+.term:hover,.term:focus-visible{background:color-mix(in srgb,var(--fwd) 14%,transparent);outline:none}
+#tip{position:fixed;z-index:60;max-width:min(320px,calc(100vw - 24px));background:var(--ink);color:var(--bg);border-radius:8px;padding:10px 12px;font-size:.86rem;line-height:1.45;box-shadow:0 6px 24px rgb(0 0 0 / .28);pointer-events:none}
+#tip b{display:block;font-family:var(--f-display);font-weight:600;text-transform:uppercase;letter-spacing:.06em;font-size:.8rem;margin-bottom:3px}
+.rangebox{display:flex;gap:8px;align-items:center;min-width:0}
+.rangebox input[type=range]{flex:1 1 auto;min-width:0}
+.rangebox input.nb{flex:0 0 auto;width:5.6em;padding:4px 6px;text-align:right}
+.rangebox .unit{flex:0 0 auto;font-family:var(--f-mono);font-size:.78rem;color:var(--muted);min-width:2.2em}
+.quiz{grid-column:1/-1;display:grid;gap:12px;margin-top:8px}
+.quiz-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,320px),1fr));gap:12px}
+.next-row{display:flex;justify-content:flex-end;padding-top:6px}
+.note{font-size:.85rem;color:var(--muted)}
+.callout{background:var(--sunk);border-radius:8px;padding:12px 14px;font-size:.9rem}
+.callout b{font-weight:600}
+.tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:8px}
+table{border-collapse:collapse;width:100%;font-size:.86rem;min-width:680px}
+th,td{padding:8px 10px;text-align:left;border-bottom:1px solid var(--line);vertical-align:top}
+tr:last-child td{border-bottom:0}
+th{font-family:var(--f-display);font-weight:600;text-transform:uppercase;letter-spacing:.05em;font-size:.76rem;color:var(--muted);background:var(--sunk)}
+td:first-child{font-weight:600;white-space:nowrap}
+tr.match td{background:color-mix(in srgb,var(--good) 13%,transparent)}
+tr.miss td{opacity:.42}
+.checks{display:flex;flex-wrap:wrap;gap:8px 18px}
+.checks label{display:flex;gap:8px;align-items:center;font-size:.9rem;cursor:pointer}
+.checks input{accent-color:var(--fwd);width:16px;height:16px}
+ul.plain{margin:0;padding-left:18px;display:grid;gap:4px}
+pre.csv{font-family:var(--f-mono);font-size:.76rem;background:var(--sunk);padding:10px 12px;border-radius:6px;overflow-x:auto;margin:0;white-space:pre}
+.svgwrap{overflow-x:auto}
+.svgwrap svg{display:block;width:100%;min-width:520px;height:auto}
+svg .t{fill:var(--ink);font-family:var(--f-mono);font-size:13px}
+svg .tm{fill:var(--muted);font-family:var(--f-display);font-size:13px;font-weight:600;letter-spacing:.06em;text-transform:uppercase}
+svg .tf{fill:var(--fwd);font-family:var(--f-mono);font-size:13px;font-weight:600}
+svg .tr{fill:var(--refl);font-family:var(--f-mono);font-size:13px;font-weight:600}
+svg .box{fill:var(--bg);stroke:var(--line);stroke-width:1.5}
+footer .wrap{padding-block:8px 48px;border-top:1px solid var(--line)}
+footer p{max-width:80ch}
+footer a{color:var(--fwd)}
+@media (prefers-reduced-motion: reduce){*{transition:none !important;animation:none !important}}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="wrap">
+    <div class="top-row">
+      <div>
+        <p class="eyebrow">Technician exam · LMR tech skills · SDR prep</p>
+        <h1>RF Bench Lab</h1>
+        <p class="lede">Eight modules. Each one asks you to predict before the bench unlocks, then checks you with exam-style questions. Answers save in this browser. Hover or tap any dotted term for a plain-English explanation.</p>
+      </div>
+      <div class="score" aria-live="polite">
+        <div><p class="label">Correct</p><div class="num" id="score-total">0<small> / 40</small></div></div>
+        <button class="btn ghost small" id="reset">Reset answers</button>
+      </div>
+    </div>
+  </div>
+</header>
+
+<nav class="tabs" aria-label="Modules">
+  <div class="wrap"><div class="tabs-inner" role="tablist" id="tablist"></div></div>
+</nav>
+
+<main>
+<div class="wrap">
+
+<!-- MODULE 1: RF MATH -->
+<section class="module" id="m-math" data-mod="math" role="tabpanel" hidden>
+  <div class="brief">
+    <p class="tag">Module 1 · Pool T5, T1</p>
+    <h2>RF math you use every day</h2>
+    <p>Frequency sets wavelength. Wavelength sets antenna size. Decibels turn multiplication into addition, which is why every RF spec sheet uses them.</p>
+    <div class="predict" data-predict="math"></div>
+    <div class="formulas">
+      <div>λ (m) = 300 ÷ f (MHz)</div>
+      <div>dB = 10 × log10(P2 ÷ P1)</div>
+      <div>dBm = 10 × log10(P in mW)</div>
+      <div>P = E × I &nbsp;·&nbsp; E = I × R</div>
+    </div>
+  </div>
+  <div class="bench locked" data-bench="math">
+    <div class="bench-head"><span class="label">Calculator bench</span><span class="note">Change any value</span></div>
+    <div class="bench-body">
+      <div class="group">
+        <p class="label">Frequency to wavelength</p>
+        <div class="controls">
+          <div class="ctl"><label for="m-f">Frequency (MHz)</label><input type="number" id="m-f" value="146.52" step="0.01" min="1"></div>
+        </div>
+        <div class="readouts">
+          <div class="ro"><div class="k">Wavelength</div><div class="val" id="m-lam"></div></div>
+          <div class="ro"><div class="k">Band</div><div class="val" id="m-band" style="font-size:.9rem"></div></div>
+          <div class="ro"><div class="k">½-wave dipole</div><div class="val" id="m-half"></div></div>
+          <div class="ro"><div class="k">¼-wave vertical</div><div class="val" id="m-quarter"></div></div>
+        </div>
+      </div>
+      <div class="group">
+        <p class="label">Power ratio in decibels</p>
+        <div class="controls">
+          <div class="ctl"><label for="m-p1">P1 (W)</label><input type="number" id="m-p1" value="5" step="0.1" min="0.001"></div>
+          <div class="ctl"><label for="m-p2">P2 (W)</label><input type="number" id="m-p2" value="50" step="0.1" min="0.001"></div>
+        </div>
+        <div class="readouts">
+          <div class="ro"><div class="k">Ratio</div><div class="val" id="m-ratio"></div></div>
+          <div class="ro"><div class="k">Change</div><div class="val" id="m-db"></div></div>
+          <div class="ro"><div class="k">P1</div><div class="val" id="m-p1dbm"></div></div>
+          <div class="ro"><div class="k">P2</div><div class="val" id="m-p2dbm"></div></div>
+        </div>
+      </div>
+      <div class="group">
+        <p class="label">Ohm's law and power</p>
+        <div class="controls">
+          <div class="ctl"><label for="m-e">Voltage E (V)</label><input type="number" id="m-e" value="13.8" step="0.1" min="0"></div>
+          <div class="ctl"><label for="m-i">Current I (A)</label><input type="number" id="m-i" value="2" step="0.1" min="0.001"></div>
+        </div>
+        <div class="readouts">
+          <div class="ro"><div class="k">Resistance R</div><div class="val" id="m-r"></div></div>
+          <div class="ro"><div class="k">Power P</div><div class="val" id="m-pw"></div></div>
+        </div>
+      </div>
+    </div>
+    <div class="lock"><div class="box"><p>Answer the prediction first.</p><button class="btn ghost small" data-skip="math">Skip prediction</button></div></div>
+  </div>
+  <div class="quiz"><p class="label">Check yourself</p><div class="quiz-grid" data-quiz="math"></div><div class="next-row"><button class="btn" data-next="waves">Next: Wave scope</button></div></div>
+</section>
+
+<!-- MODULE 2: WAVE SCOPE -->
+<section class="module" id="m-waves" data-mod="waves" role="tabpanel" hidden>
+  <div class="brief">
+    <p class="tag">Module 2 · Pool T3, T5</p>
+    <h2>Wave scope</h2>
+    <p>Every idea in this lab is a wave doing something. Change frequency and watch the wavelength shrink against a real ruler. Change power and watch the height follow voltage, not watts. Add a second signal and watch two waves add up or cancel.</p>
+    <div class="predict" data-predict="waves"></div>
+    <div class="formulas">
+      <div>λ (m) = 300 ÷ f (MHz)</div>
+      <div>Period (ns) = 1000 ÷ f (MHz)</div>
+      <div>V peak = √(2 × P × 50) on 50 Ω</div>
+      <div>−3 dB = half power = 71% of the voltage</div>
+      <div>Phase shift = 360° × path difference ÷ λ</div>
+    </div>
+  </div>
+  <div class="bench locked" data-bench="waves">
+    <div class="bench-head"><span class="label">Wave scope</span><span class="presets"><button class="btn ghost small" data-wf="146.52">2 m</button><button class="btn ghost small" data-wf="155">VHF LMR</button><button class="btn ghost small" data-wf="446">70 cm</button><button class="btn ghost small" data-wf="915">Meshtastic</button></span></div>
+    <div class="bench-body">
+      <div class="group">
+        <p class="label">Signal A</p>
+        <div class="controls">
+          <div class="ctl"><label for="w-f">Frequency</label><input type="range" id="w-f" min="1.4771" max="3" step="any" value="2.165897"></div>
+          <div class="ctl"><label for="w-p">Power <output id="w-p-o"></output></label><input type="range" id="w-p" min="20" max="50" step="0.1" value="37"></div>
+        </div>
+      </div>
+      <div class="group">
+        <div class="checks"><label><input type="checkbox" id="w-b"> Add signal B (a reflection or a second station)</label></div>
+        <div class="controls">
+          <div class="ctl"><label for="w-ba">B strength</label><input type="range" id="w-ba" min="0" max="100" step="1" value="80"></div>
+          <div class="ctl"><label for="w-bph">B phase <output id="w-bph-o"></output></label><input type="range" id="w-bph" min="0" max="360" step="1" value="90"></div>
+          <div class="ctl"><label for="w-bdf">B frequency offset</label><input type="range" id="w-bdf" min="0" max="20" step="0.1" value="0"></div>
+        </div>
+      </div>
+      <div class="readouts">
+        <div class="ro"><div class="k">Wavelength</div><div class="val" id="w-lam"></div></div>
+        <div class="ro"><div class="k">¼-wave antenna</div><div class="val" id="w-qw"></div></div>
+        <div class="ro"><div class="k">Period</div><div class="val" id="w-per"></div></div>
+        <div class="ro"><div class="k">V peak, 50 Ω</div><div class="val" id="w-vpk"></div></div>
+        <div class="ro"><div class="k">A + B vs A alone</div><div class="val" id="w-sum"></div></div>
+      </div>
+      <div class="pane"><p class="label">Space view · 6 m of air, wave in flight</p><canvas class="scope" id="cv-wspace" style="height:220px" aria-label="Wave drawn against a six meter ruler"></canvas></div>
+      <div class="scopes">
+        <div class="pane"><p class="label">Scope view · voltage at one point</p><canvas class="scope" id="cv-wtime" style="height:180px" aria-label="Voltage over time at one point"></canvas></div>
+        <div class="pane"><p class="label">Phasors · A + B</p><canvas class="scope" id="cv-wphasor" style="height:180px" aria-label="Rotating phasors for signals A and B and their sum"></canvas></div>
+      </div>
+      <p class="legend"><span><i style="background:var(--fwd)"></i>signal A</span><span><i style="background:var(--refl)"></i>signal B</span><span><i style="background:var(--ink)"></i>A + B, what the receiver gets</span><span><i style="background:var(--good)"></i>¼-wave antenna to scale</span></p>
+      <p class="note" style="margin:0">Wave height is to scale in voltage, with 50 dBm (100 W) as full height. Motion is slowed billions of times so you can see it.</p>
+    </div>
+    <div class="lock"><div class="box"><p>Answer the prediction first.</p><button class="btn ghost small" data-skip="waves">Skip prediction</button></div></div>
+  </div>
+  <div class="quiz"><p class="label">Check yourself</p><div class="quiz-grid" data-quiz="waves"></div><div class="next-row"><button class="btn" data-next="swr">Next: Feedline &amp; SWR</button></div></div>
+</section>
+
+<!-- MODULE 2: SWR -->
+<section class="module" id="m-swr" data-mod="swr" role="tabpanel" hidden>
+  <div class="brief">
+    <p class="tag">Module 3 · Pool T9, T7</p>
+    <h2>Feedlines and SWR</h2>
+    <p>Coax has a characteristic impedance, Z0. When the load matches Z0, all forward power is absorbed. When it does not, some reflects back. Forward and reflected waves add into a standing wave. SWR is the ratio of its peak to its valley.</p>
+    <div class="predict" data-predict="swr"></div>
+    <div class="formulas">
+      <div>Γ = (ZL − Z0) ÷ (ZL + Z0)</div>
+      <div>SWR = (1 + |Γ|) ÷ (1 − |Γ|)</div>
+      <div>Reflected power = |Γ|²</div>
+      <div>Return loss = −20 × log10|Γ| dB</div>
+      <div>|Γ| at radio = |Γ| at load × 10^(−coax dB ÷ 10)</div>
+    </div>
+  </div>
+  <div class="bench locked" data-bench="swr">
+    <div class="bench-head"><span class="label">Line analyzer</span><span class="note">ZL = R + jX at the antenna</span></div>
+    <div class="bench-body">
+      <div class="controls">
+        <div class="ctl"><label for="s-r">Load R</label><input type="range" id="s-r" min="5" max="300" step="1" value="75"></div>
+        <div class="ctl"><label for="s-x">Load X</label><input type="range" id="s-x" min="-150" max="150" step="1" value="0"></div>
+        <div class="ctl"><label for="s-z0">Coax Z0</label><select id="s-z0"><option value="50">50 Ω (ham, LMR)</option><option value="75">75 Ω (TV, CATV)</option></select></div>
+        <div class="ctl"><label for="s-cable">Coax type</label><select id="s-cable"><option value="rg58">RG-58</option><option value="rg8x" selected>RG-8X</option><option value="rg213">RG-213</option><option value="lmr400">LMR-400</option></select></div>
+        <div class="ctl"><label for="s-len">Length</label><input type="range" id="s-len" min="0" max="300" step="1" value="50"></div>
+        <div class="ctl"><label for="s-f">Frequency (MHz)</label><input type="number" id="s-f" value="146" min="30" max="1000" step="1"></div>
+        <div class="ctl"><label for="s-p">Transmit power (W)</label><input type="number" id="s-p" value="5" min="0.1" step="0.5"></div>
+      </div>
+      <div class="readouts">
+        <div class="ro"><div class="k">|Γ|</div><div class="val" id="s-g"></div></div>
+        <div class="ro"><div class="k">SWR at antenna</div><div class="val" id="s-swr"></div></div>
+        <div class="ro"><div class="k">SWR at radio</div><div class="val" id="s-swr-in"></div></div>
+        <div class="ro"><div class="k">Return loss</div><div class="val" id="s-rl"></div></div>
+        <div class="ro"><div class="k">Reflected</div><div class="val" id="s-refl"></div></div>
+        <div class="ro"><div class="k">Mismatch loss</div><div class="val" id="s-ml"></div></div>
+        <div class="ro"><div class="k">Coax loss</div><div class="val" id="s-cl"></div></div>
+        <div class="ro"><div class="k">Power radiated</div><div class="val" id="s-pa"></div></div>
+      </div>
+      <canvas class="scope" id="cv-swr" aria-label="Standing wave on the last two wavelengths of line before the load"></canvas>
+      <p class="legend"><span><i style="background:var(--fwd)"></i>forward wave</span><span><i style="background:var(--refl)"></i>reflected wave</span><span><i style="background:var(--ink)"></i>sum on the line</span><span><i style="background:var(--muted);opacity:.5"></i>standing-wave envelope</span></p>
+      <p class="note" style="margin:0">Coax loss uses approximate datasheet values scaled by √f. Check the manufacturer's sheet for real work.</p>
+    </div>
+    <div class="lock"><div class="box"><p>Answer the prediction first.</p><button class="btn ghost small" data-skip="swr">Skip prediction</button></div></div>
+  </div>
+  <div class="quiz"><p class="label">Check yourself</p><div class="quiz-grid" data-quiz="swr"></div><div class="next-row"><button class="btn" data-next="antenna">Next: Antennas</button></div></div>
+</section>
+
+<!-- MODULE 3: ANTENNAS -->
+<section class="module" id="m-antenna" data-mod="antenna" role="tabpanel" hidden>
+  <div class="brief">
+    <p class="tag">Module 4 · Pool T9</p>
+    <h2>Antennas and the trim cycle</h2>
+    <p>An antenna is resonant where its reactance crosses zero. Field techs sweep SWR across the band, read where the dip lands, trim, and sweep again. This bench simulates that sweep, the same view a NanoVNA or a Site Master gives you.</p>
+    <div class="predict" data-predict="antenna"></div>
+    <div class="formulas">
+      <div>½-wave dipole (ft) ≈ 468 ÷ f (MHz)</div>
+      <div>¼-wave vertical (ft) ≈ 234 ÷ f (MHz)</div>
+      <div>dBi = dBd + 2.15</div>
+      <div>ERP = P × 10^((gain dBd − loss dB) ÷ 10)</div>
+    </div>
+  </div>
+  <div class="bench locked" data-bench="antenna">
+    <div class="bench-head"><span class="label">Sweep analyzer</span><span class="note">Simplified single-resonance model</span></div>
+    <div class="bench-body">
+      <div class="group">
+        <div class="controls">
+          <div class="ctl"><label for="a-type">Antenna</label><select id="a-type"><option value="dipole">½-wave dipole (~73 Ω)</option><option value="gpflat">¼-wave, flat radials (~36 Ω)</option><option value="gpdroop">¼-wave, drooped radials (~50 Ω)</option></select></div>
+          <div class="ctl"><label for="a-f">Target (MHz)</label><input type="number" id="a-f" value="146" min="1" step="0.5"></div>
+          <div class="ctl" style="grid-column:1/-1"><label for="a-len">Element length <output id="a-len-o"></output></label><input type="range" id="a-len" min="0" max="100" step="0.1" value="50"></div>
+        </div>
+        <div class="readouts">
+          <div class="ro"><div class="k">Resonance</div><div class="val" id="a-f0"></div></div>
+          <div class="ro"><div class="k">SWR at target</div><div class="val" id="a-swr"></div></div>
+          <div class="ro"><div class="k">2:1 bandwidth</div><div class="val" id="a-bw"></div></div>
+          <div class="ro"><div class="k">Status</div><div class="val" id="a-stat"></div></div>
+        </div>
+        <canvas class="scope" id="cv-ant" aria-label="SWR versus frequency sweep"></canvas>
+        <p class="legend"><span><i style="background:var(--fwd)"></i>SWR trace</span><span><i style="background:var(--ink)"></i>target frequency</span><span><i style="background:var(--refl)"></i>2:1 line</span></p>
+      </div>
+      <div class="group">
+        <p class="label">Effective radiated power</p>
+        <div class="controls">
+          <div class="ctl"><label for="e-p">Transmitter (W)</label><input type="number" id="e-p" value="50" min="0.1" step="1"></div>
+          <div class="ctl"><label for="e-l">Feedline loss (dB)</label><input type="number" id="e-l" value="2" min="0" step="0.1"></div>
+          <div class="ctl"><label for="e-g">Antenna gain (dBd)</label><input type="number" id="e-g" value="6" step="0.5"></div>
+        </div>
+        <div class="readouts">
+          <div class="ro"><div class="k">Net gain</div><div class="val" id="e-net"></div></div>
+          <div class="ro"><div class="k">ERP</div><div class="val" id="e-erp"></div></div>
+          <div class="ro"><div class="k">EIRP</div><div class="val" id="e-eirp"></div></div>
+        </div>
+      </div>
+    </div>
+    <div class="lock"><div class="box"><p>Answer the prediction first.</p><button class="btn ghost small" data-skip="antenna">Skip prediction</button></div></div>
+  </div>
+  <div class="quiz"><p class="label">Check yourself</p><div class="quiz-grid" data-quiz="antenna"></div><div class="next-row"><button class="btn" data-next="repeater">Next: Repeaters</button></div></div>
+</section>
+
+<!-- MODULE 4: REPEATERS -->
+<section class="module" id="m-repeater" data-mod="repeater" role="tabpanel" hidden>
+  <div class="brief">
+    <p class="tag">Module 5 · Pool T1, T2, T4</p>
+    <h2>Repeaters and radio programming</h2>
+    <p>A repeater listens on one frequency and transmits on another at the same time. Your radio has to transmit on the repeater's input, listen on its output, and send the right access tone. Getting those three fields right is most of radio programming, in ham and LMR alike.</p>
+    <div class="predict" data-predict="repeater"></div>
+    <div class="callout"><b>Legal line.</b> Until you hold a license, use the FT-60s to listen only. After you pass, transmit on amateur bands only. The FT-60 is an amateur radio, not a Part 90 LMR radio.</div>
+  </div>
+  <div class="bench locked" data-bench="repeater">
+    <div class="bench-head"><span class="label">Channel builder</span><span class="note">Offsets follow common US band plans</span></div>
+    <div class="bench-body">
+      <div class="controls">
+        <div class="ctl"><label for="r-f">Repeater output (MHz)</label><input type="number" id="r-f" value="146.940" step="0.005" min="1"></div>
+        <div class="ctl"><label for="r-dup">Duplex</label><select id="r-dup"><option value="auto">Auto (band plan)</option><option value="-">Minus</option><option value="+">Plus</option><option value="">Simplex</option></select></div>
+        <div class="ctl"><label for="r-tm">Tone mode</label><select id="r-tm"><option value="Tone">Tone (encode)</option><option value="TSQL">TSQL (encode + decode)</option><option value="DTCS">DCS</option><option value="">None</option></select></div>
+        <div class="ctl"><label for="r-tone">CTCSS (Hz)</label><select id="r-tone"></select></div>
+        <div class="ctl"><label for="r-dcs">DCS code</label><input type="text" id="r-dcs" value="023" maxlength="3"></div>
+        <div class="ctl"><label for="r-name">Channel name</label><input type="text" id="r-name" value="LOCAL" maxlength="8"></div>
+      </div>
+      <div class="svgwrap">
+        <svg viewBox="0 0 660 160" role="img" aria-label="Repeater signal path">
+          <defs>
+            <marker id="arF" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" style="fill:var(--fwd)"/></marker>
+            <marker id="arR" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" style="fill:var(--refl)"/></marker>
+          </defs>
+          <path d="M330 62 C 330 18, 75 18, 75 58" fill="none" style="stroke:var(--refl)" stroke-width="2" stroke-dasharray="6 5" marker-end="url(#arR)"/>
+          <text class="tr" x="202" y="24" text-anchor="middle" id="sv-listen">You listen on 146.940</text>
+          <rect class="box" x="10" y="62" width="130" height="58" rx="8"/>
+          <text class="tm" x="75" y="86" text-anchor="middle">Your FT-60</text>
+          <text class="t" x="75" y="106" text-anchor="middle" id="sv-you">TX 146.340</text>
+          <rect class="box" x="265" y="62" width="130" height="58" rx="8"/>
+          <text class="tm" x="330" y="86" text-anchor="middle">Repeater</text>
+          <text class="t" x="330" y="106" text-anchor="middle" id="sv-rpt">RX .340 / TX .940</text>
+          <rect class="box" x="520" y="62" width="130" height="58" rx="8"/>
+          <text class="tm" x="585" y="86" text-anchor="middle">Others</text>
+          <text class="t" x="585" y="106" text-anchor="middle" id="sv-oth">RX 146.940</text>
+          <line x1="142" y1="91" x2="262" y2="91" style="stroke:var(--fwd)" stroke-width="2" marker-end="url(#arF)"/>
+          <text class="tf" x="202" y="140" text-anchor="middle" id="sv-tone">+ 100.0 Hz tone</text>
+          <line x1="397" y1="91" x2="517" y2="91" style="stroke:var(--fwd)" stroke-width="2" marker-end="url(#arF)"/>
+          <text class="tf" x="457" y="140" text-anchor="middle" id="sv-out">146.940</text>
+        </svg>
+      </div>
+      <div class="readouts">
+        <div class="ro"><div class="k">You transmit</div><div class="val" id="r-tx"></div></div>
+        <div class="ro"><div class="k">You receive</div><div class="val" id="r-rx"></div></div>
+        <div class="ro"><div class="k">Offset</div><div class="val" id="r-off"></div></div>
+        <div class="ro"><div class="k">Access</div><div class="val" id="r-acc"></div></div>
+      </div>
+      <p class="note" id="r-hint" style="margin:0"></p>
+      <div class="group">
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap"><p class="label">CHIRP-style CSV row</p><button class="btn ghost small" id="r-copy">Copy</button></div>
+        <pre class="csv" id="r-csv"></pre>
+        <p class="note" style="margin:0">Classic CHIRP column layout. Export one channel from your CHIRP version first and match its header before importing.</p>
+      </div>
+    </div>
+    <div class="lock"><div class="box"><p>Answer the prediction first.</p><button class="btn ghost small" data-skip="repeater">Skip prediction</button></div></div>
+  </div>
+  <div class="quiz"><p class="label">Check yourself</p><div class="quiz-grid" data-quiz="repeater"></div><div class="next-row"><button class="btn" data-next="link">Next: Link budget</button></div></div>
+</section>
+
+<!-- MODULE 5: LINK BUDGET -->
+<section class="module" id="m-link" data-mod="link" role="tabpanel" hidden>
+  <div class="brief">
+    <p class="tag">Module 6 · Pool T3, T9</p>
+    <h2>Link budgets and range</h2>
+    <p>A link budget adds every gain and subtracts every loss between two radios. If the signal arrives above the receiver's sensitivity, the link works. Free-space loss is the floor. Terrain, buildings, and bodies only add to it.</p>
+    <div class="predict" data-predict="link"></div>
+    <div class="formulas">
+      <div>FSPL (dB) = 20log10(d km) + 20log10(f MHz) + 32.44</div>
+      <div>RX = Ptx + Gtx − Ltx − FSPL − extra + Grx − Lrx</div>
+      <div>Horizon (km) ≈ 4.12 × (√h1 + √h2), h in m</div>
+      <div>LoRa sens ≈ −174 + 10log10(BW) + NF + SNRreq</div>
+    </div>
+  </div>
+  <div class="bench locked" data-bench="link">
+    <div class="bench-head"><span class="label">Link budget</span><span class="presets"><button class="btn ghost small" data-preset="ht">FT-60 to FT-60</button><button class="btn ghost small" data-preset="mobile">Mobile to repeater</button><button class="btn ghost small" data-preset="mesh">Meshtastic nodes</button></span></div>
+    <div class="bench-body">
+      <div class="controls">
+        <div class="ctl"><label for="l-p">TX power (dBm) <output id="l-p-o"></output></label><input type="number" id="l-p" value="37" step="1"></div>
+        <div class="ctl"><label for="l-gt">TX antenna (dBi)</label><input type="number" id="l-gt" value="-2" step="0.5"></div>
+        <div class="ctl"><label for="l-lt">TX coax loss (dB)</label><input type="number" id="l-lt" value="0" step="0.5" min="0"></div>
+        <div class="ctl"><label for="l-gr">RX antenna (dBi)</label><input type="number" id="l-gr" value="-2" step="0.5"></div>
+        <div class="ctl"><label for="l-lr">RX coax loss (dB)</label><input type="number" id="l-lr" value="0" step="0.5" min="0"></div>
+        <div class="ctl"><label for="l-f">Frequency (MHz)</label><input type="number" id="l-f" value="146.52" step="0.01" min="1"></div>
+        <div class="ctl"><label for="l-d">Distance</label><input type="range" id="l-d" min="0.1" max="100" step="0.1" value="8"></div>
+        <div class="ctl"><label for="l-x">Terrain / clutter loss</label><input type="range" id="l-x" min="0" max="50" step="1" value="0"></div>
+        <div class="ctl"><label for="l-h1">TX height (m)</label><input type="number" id="l-h1" value="1.5" min="0.5" step="0.5"></div>
+        <div class="ctl"><label for="l-h2">RX height (m)</label><input type="number" id="l-h2" value="1.5" min="0.5" step="0.5"></div>
+        <div class="ctl"><label for="l-mode">Receiver</label><select id="l-mode"><option value="fm">FM voice</option><option value="lora">LoRa</option></select></div>
+        <div class="ctl" id="l-sens-wrap"><label for="l-sens">Sensitivity (dBm)</label><input type="number" id="l-sens" value="-121" step="1"></div>
+        <div class="ctl" id="l-sf-wrap" hidden><label for="l-sf">Spreading factor</label><select id="l-sf"><option>7</option><option>8</option><option>9</option><option>10</option><option selected>11</option><option>12</option></select></div>
+        <div class="ctl" id="l-bw-wrap" hidden><label for="l-bw">Bandwidth (kHz)</label><select id="l-bw"><option>125</option><option selected>250</option><option>500</option></select></div>
+      </div>
+      <div class="readouts">
+        <div class="ro"><div class="k">EIRP</div><div class="val" id="l-eirp"></div></div>
+        <div class="ro"><div class="k">Path loss</div><div class="val" id="l-fspl"></div></div>
+        <div class="ro"><div class="k">Received</div><div class="val" id="l-rx"></div></div>
+        <div class="ro"><div class="k">Sensitivity</div><div class="val" id="l-sens-o"></div></div>
+        <div class="ro"><div class="k">Margin</div><div class="val" id="l-m"></div></div>
+        <div class="ro"><div class="k">Radio horizon</div><div class="val" id="l-hz"></div></div>
+        <div class="ro"><div class="k">60% Fresnel</div><div class="val" id="l-fr"></div></div>
+        <div class="ro" id="l-rate-wrap" hidden><div class="k">LoRa data rate</div><div class="val" id="l-rate"></div></div>
+      </div>
+      <canvas class="scope" id="cv-link" aria-label="Signal level diagram from transmitter to receiver"></canvas>
+      <p class="note" id="l-warn" style="margin:0"></p>
+    </div>
+    <div class="lock"><div class="box"><p>Answer the prediction first.</p><button class="btn ghost small" data-skip="link">Skip prediction</button></div></div>
+  </div>
+  <div class="quiz"><p class="label">Check yourself</p><div class="quiz-grid" data-quiz="link"></div><div class="next-row"><button class="btn" data-next="lmr">Next: LMR systems</button></div></div>
+</section>
+
+<!-- MODULE 6: LMR SYSTEMS -->
+<section class="module" id="m-lmr" data-mod="lmr" role="tabpanel" hidden>
+  <div class="brief">
+    <p class="tag">Module 7 · Job track (not on the Tech exam)</p>
+    <h2>LMR, P25, and PoC</h2>
+    <p>Land mobile radio is the two-way radio that police, fire, utilities, and bases run on. Push-to-talk over cellular (your PoC radios) does a similar job over the phone network. The difference shows up when the network fails.</p>
+    <div class="predict" data-predict="lmr"></div>
+    <div class="callout">
+      <p class="label" style="margin-bottom:6px">Where this meets cybersecurity</p>
+      <ul class="plain">
+        <li>Encrypted P25 is only as good as its key handling. Keys load from a key variable loader or over the air (OTAR).</li>
+        <li>A 2011 University of Pennsylvania study found federal P25 users often sent sensitive traffic in the clear by mistake.</li>
+        <li>TETRA:BURST (2023) exposed a deliberately weakened cipher in the European TETRA standard.</li>
+        <li>Researchers found both with SDRs. That is your path from this lab to RF security.</li>
+      </ul>
+    </div>
+  </div>
+  <div class="bench locked" data-bench="lmr">
+    <div class="bench-head"><span class="label">System selector</span><span class="note">Check what the job needs</span></div>
+    <div class="bench-body">
+      <div class="checks">
+        <label><input type="checkbox" id="c-off"> Works with no towers or cell network</label>
+        <label><input type="checkbox" id="c-enc"> Standard AES in the air interface</label>
+        <label><input type="checkbox" id="c-two"> Two voice paths per 12.5 kHz</label>
+      </div>
+      <div class="tablewrap">
+        <table>
+          <thead><tr><th>System</th><th>Access</th><th>Channel</th><th>Paths / channel</th><th>No infrastructure</th><th>Encryption</th><th>Typical user</th></tr></thead>
+          <tbody id="lmr-rows">
+            <tr data-off="1" data-enc="0" data-two="0"><td>Analog FM</td><td>FDMA</td><td>12.5 kHz</td><td>1</td><td>Yes, simplex</td><td>None</td><td>Business, legacy agencies</td></tr>
+            <tr data-off="1" data-enc="0" data-two="1"><td>DMR Tier II</td><td>2-slot TDMA</td><td>12.5 kHz</td><td>2</td><td>Yes, direct mode</td><td>Vendor-specific</td><td>Utilities, campuses, industry</td></tr>
+            <tr data-off="1" data-enc="1" data-two="0"><td>P25 Phase 1</td><td>FDMA</td><td>12.5 kHz</td><td>1</td><td>Yes, talkaround</td><td>AES-256</td><td>Public safety, federal, DoD</td></tr>
+            <tr data-off="1" data-enc="1" data-two="1"><td>P25 Phase 2</td><td>2-slot TDMA</td><td>12.5 kHz</td><td>2</td><td>Talkaround falls back to Phase 1</td><td>AES-256</td><td>Large trunked systems</td></tr>
+            <tr data-off="0" data-enc="0" data-two="0"><td>PoC</td><td>IP over LTE/5G</td><td>Cellular</td><td>Not channel-based</td><td>No, needs the network</td><td>TLS, vendor-specific</td><td>Fleets, logistics, overflow</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="group">
+        <p class="label">Skills LMR postings ask for, and where this lab covers them</p>
+        <ul class="plain">
+          <li>Program radios and build code plugs <span class="chip info">Module 5</span></li>
+          <li>Install and sweep antennas and coax <span class="chip info">Modules 3, 4</span></li>
+          <li>Coverage and site planning <span class="chip info">Module 6</span></li>
+          <li>Troubleshoot analog and P25 systems <span class="chip info">Modules 7, 8</span></li>
+          <li>FCC GROL, Elements 1 and 3 <span class="chip warn">Separate study</span></li>
+          <li>Motorola R56 grounding, OSHA 10/30, tower climbing <span class="chip warn">Separate training</span></li>
+        </ul>
+      </div>
+    </div>
+    <div class="lock"><div class="box"><p>Answer the prediction first.</p><button class="btn ghost small" data-skip="lmr">Skip prediction</button></div></div>
+  </div>
+  <div class="quiz"><p class="label">Check yourself</p><div class="quiz-grid" data-quiz="lmr"></div><div class="next-row"><button class="btn" data-next="signals">Next: Modulation</button></div></div>
+</section>
+
+<!-- MODULE 7: SIGNALS -->
+<section class="module" id="m-signals" data-mod="signals" role="tabpanel" hidden>
+  <div class="brief">
+    <p class="tag">Module 8 · Pool T8 · SDR bridge</p>
+    <h2>Modulation and spectrum</h2>
+    <p>Modulation puts voice onto a carrier. AM changes its strength. FM changes its frequency. The spectrum view below is what an SDR or service monitor shows. Learning to read it is the first SDR skill.</p>
+    <div class="predict" data-predict="signals"></div>
+    <div class="formulas">
+      <div>FM: β = Δf ÷ fm</div>
+      <div>Carson BW ≈ 2 × (Δf + fm)</div>
+      <div>FM line n has amplitude |Jn(β)|</div>
+      <div>AM: BW = 2 × fm, sidebands = m²÷(2+m²)</div>
+    </div>
+  </div>
+  <div class="bench locked" data-bench="signals">
+    <div class="bench-head"><span class="label">Spectrum monitor</span><span class="note">Single audio tone modulating a carrier</span></div>
+    <div class="bench-body">
+      <div class="controls">
+        <div class="ctl"><label for="g-mode">Mode</label><select id="g-mode"><option value="fm">FM</option><option value="am">AM</option></select></div>
+        <div class="ctl"><label for="g-fm">Audio tone fm</label><input type="range" id="g-fm" min="0.3" max="3" step="0.01" value="1"></div>
+        <div class="ctl" id="g-dev-wrap"><label for="g-dev">Deviation Δf</label><input type="range" id="g-dev" min="0.2" max="7.5" step="0.01" value="2.5"></div>
+        <div class="ctl" id="g-m-wrap" hidden><label for="g-m">Modulation depth</label><input type="range" id="g-m" min="0" max="100" step="1" value="70"></div>
+      </div>
+      <div class="readouts">
+        <div class="ro"><div class="k" id="g-k1">Index β</div><div class="val" id="g-v1"></div></div>
+        <div class="ro"><div class="k">Bandwidth</div><div class="val" id="g-bw"></div></div>
+        <div class="ro"><div class="k">Carrier level</div><div class="val" id="g-car"></div></div>
+        <div class="ro"><div class="k">Sideband power</div><div class="val" id="g-sb"></div></div>
+      </div>
+      <canvas class="scope" id="cv-time" style="height:150px" aria-label="Modulated waveform in time"></canvas>
+      <canvas class="scope" id="cv-spec" aria-label="Spectrum of the modulated signal"></canvas>
+      <p class="note" style="margin:0">Time view slows the carrier so you can see it. Spectrum view is to scale, ±15 kHz around the carrier.</p>
+    </div>
+    <div class="lock"><div class="box"><p>Answer the prediction first.</p><button class="btn ghost small" data-skip="signals">Skip prediction</button></div></div>
+  </div>
+  <div class="quiz"><p class="label">Check yourself</p><div class="quiz-grid" data-quiz="signals"></div><div class="next-row"><button class="btn" data-next="math">Back to Module 1</button></div></div>
+</section>
+
+</div>
+</main>
+
+<footer>
+  <div class="wrap">
+    <p class="note">Models are teaching approximations: coax loss scales by √f from typical datasheet values, antennas use a single-resonance model, link budgets assume free space plus your clutter allowance, and repeater offsets follow common US band plans that vary by region. Study the official pool for the exam.</p>
+    <p class="note">References: <a href="https://ncvec.org/index.php/2026-2030-technician-question-pool" target="_blank" rel="noopener">NCVEC 2026-2030 Technician pool</a> · <a href="https://hamstudy.org" target="_blank" rel="noopener">HamStudy</a> · <a href="https://chirpmyradio.com" target="_blank" rel="noopener">CHIRP</a> · <a href="https://www.arrl.org/band-plan" target="_blank" rel="noopener">ARRL band plan</a></p>
+  </div>
+</footer>
+
+<script>
+(function(){
+"use strict";
+const $=(s,el=document)=>el.querySelector(s);
+const $$=(s,el=document)=>Array.from(el.querySelectorAll(s));
+const num=(id,d)=>{const v=parseFloat(document.getElementById(id).value);return Number.isFinite(v)?v:d;};
+const set=(id,html)=>{const e=document.getElementById(id);if(e)e.innerHTML=html;};
+const log10=Math.log10;
+const u=(v,unit)=>`${v}<small> ${unit}</small>`;
+
+/* ---------- storage ---------- */
+const KEY="rfbench.v1";
+let store={answers:{},skips:{},tab:null};
+try{const s=JSON.parse(localStorage.getItem(KEY)||"null");if(s&&typeof s==="object"){store.answers=s.answers||{};store.skips=s.skips||{};store.tab=s.tab||null;}}catch(e){}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(store));}catch(e){}}
+
+/* ---------- glossary and tooltips ---------- */
+const GL={
+wavelength:["Wavelength","The length of one complete wave, peak to peak. λ = 300 ÷ MHz. At 146 MHz one wave is about 2 m long. Antennas are sized as fractions of it."],
+frequency:["Frequency","How many waves pass each second. 1 MHz is one million per second. Higher frequency means shorter waves."],
+band:["Band","A frequency range set aside for one service. Hams may only transmit inside ham bands. LMR uses separate Part 90 ranges."],
+dipole:["Half-wave dipole","The basic antenna. A wire one half wavelength long, fed in the middle. Gain about 2.15 dBi. Feedpoint about 73 Ω."],
+quarterwave:["Quarter-wave antenna","One vertical element a quarter wavelength long, over radials or a metal surface. The whip on most handhelds and mobiles is based on it."],
+ratio:["Power ratio","How many times bigger P2 is than P1. Decibels are this same ratio on a log scale."],
+db:["Decibel (dB)","A ratio, not an amount. +3 dB doubles power, +10 dB is ten times, −3 dB halves it. Because it is logarithmic, you add dB instead of multiplying."],
+dbm:["dBm","Power compared to 1 milliwatt. 0 dBm = 1 mW. 30 dBm = 1 W. 37 dBm = 5 W, your FT-60 on high. Receivers work near −120 dBm, a millionth of a billionth of a watt."],
+dbi:["dBi","Antenna gain compared to an imaginary isotropic antenna that radiates equally in every direction. Gain comes from focusing energy, not creating it."],
+dbd:["dBd","Antenna gain compared to a half-wave dipole. dBi = dBd + 2.15. A spec quoted in dBi looks 2.15 dB better for the same antenna."],
+resistance:["Resistance (R)","The part of impedance that uses up energy. In an antenna, resistance is where power leaves as radio waves."],
+reactance:["Reactance (X)","The part of impedance that stores energy and hands it back each cycle instead of using it. Positive is inductive, negative is capacitive. At resonance X is zero."],
+impedance:["Impedance","Total opposition to AC current, in ohms. Written R + jX: resistance plus reactance. Power transfers best when the load matches the line."],
+power:["Power (watts)","Energy per second. P = E × I. Transmitter output is measured in watts or dBm."],
+voltage:["Voltage (E)","Electrical pressure that pushes current. A mobile radio runs on about 13.8 V DC."],
+current:["Current (I)","The flow of electric charge, in amps. A 50 W mobile can draw 10 A or more while transmitting."],
+ohm:["Ohm's law","E = I × R. Voltage equals current times resistance. Rearrange it to find any one value from the other two."],
+period:["Period","Time for one complete wave. Period = 1 ÷ frequency. At 100 MHz one cycle takes 10 nanoseconds."],
+vpeak:["Peak voltage","The highest voltage the wave reaches across a 50 Ω load. Power follows voltage squared, so double the voltage is four times the power."],
+sumdb:["A + B vs A alone","How strong the combined signal is compared with A by itself. 0 dB means no change. Positive is a boost. Negative is a fade."],
+bstrength:["Signal B strength","B's voltage as a percentage of A. A reflection off a building is usually weaker than the direct signal."],
+phase:["Phase","Where a wave is in its cycle, in degrees. 360° is one full cycle. Two equal waves 0° apart add. 180° apart they cancel."],
+pathdiff:["Path difference","How much farther one copy of the signal traveled than the other. Each extra wavelength of distance equals 360° of phase."],
+beat:["Beating","Two signals at slightly different frequencies drift in and out of phase. Their sum pulses between boost and fade."],
+multipath:["Multipath","The same signal arriving by more than one route, such as direct and bounced off a building. The copies add or cancel depending on phase."],
+picket:["Picket fencing","Rapid flutter on a moving VHF/UHF signal caused by multipath. Every half wavelength of travel swaps adding for canceling."],
+phasor:["Phasor","An arrow that stands for a wave. Length is strength. Angle is phase. Adding two waves is adding their arrows tip to tail."],
+spaceview:["Space view","A snapshot of the wave stretched out through the air, against a real ruler. This shows wavelength."],
+scopeview:["Scope view","What an oscilloscope at one spot would show: voltage rising and falling over time. This shows period."],
+z0:["Characteristic impedance (Z0)","The impedance a coax is built to have, set by its conductor sizes and insulation. Radio coax is 50 Ω. Cable TV uses 75 Ω."],
+coax:["Coax / feedline","The cable between radio and antenna: a center wire inside a shield. Every foot loses some power, more at higher frequencies."],
+coaxtype:["Coax type","Thicker, better-built coax loses less. RG-58 is thin and lossy. LMR-400 is thick and low-loss, common at repeater sites."],
+coaxloss:["Coax loss","Power lost as heat in the cable, in dB. It grows with length and frequency. 3 dB of loss throws away half your power."],
+gamma:["Reflection coefficient |Γ|","The fraction of voltage that bounces back from the load. 0 means a perfect match. 1 means everything reflects."],
+swr:["SWR","Standing wave ratio. Compares the voltage peaks and valleys on the line. 1:1 is a perfect match. Under 1.5:1 is good. Many solid-state radios cut power as SWR climbs past about 2:1."],
+swrradio:["SWR at the radio","What a meter at the radio end would read. Coax loss hides reflections, so this reads better than the antenna's real SWR."],
+returnloss:["Return loss","How far below forward power the reflection is, in dB. Bigger is better. 20 dB means only 1% comes back. Analyzers often report this instead of SWR."],
+reflected:["Reflected power","The share of forward power that bounces back toward the radio. Equal to |Γ|²."],
+mismatch:["Mismatch loss","Power the antenna turns away because of the mismatch, in dB. At 2:1 it is only about 0.5 dB."],
+radiated:["Power radiated","Power that reaches the antenna and leaves as radio waves, after coax loss and reflection. Simplified: ignores re-reflections."],
+forward:["Forward wave","Energy traveling from the radio toward the antenna."],
+reflectedwave:["Reflected wave","Energy bounced back from a mismatched antenna toward the radio."],
+standingwave:["Standing wave","The pattern made when forward and reflected waves overlap. Peaks and valleys stay in fixed places on the line instead of traveling."],
+envelope:["Standing-wave envelope","The outline of the highest voltage at each spot on the line. Flat means matched. Lumpy means mismatched. Peak ÷ valley = SWR."],
+txpower:["Transmit power","RF power out of the radio. FT-60 high is 5 W. A typical mobile is 25 to 50 W."],
+resonance:["Resonant frequency","Where the antenna's reactance cancels to zero. SWR is usually lowest there. A shorter element resonates higher."],
+anttype:["Antenna type","Changes the feedpoint resistance, which sets the best SWR possible at resonance on 50 Ω coax."],
+target:["Target frequency","The frequency you want to use. You trim the antenna until resonance lands here."],
+trim:["Element length / trim","Cutting the element shorter raises resonance. Longer lowers it. Cut long first. You cannot add metal back."],
+bw21:["2:1 bandwidth","The span of frequencies where SWR stays at or below 2:1. Wider is more forgiving."],
+sweep:["Sweep","Measuring SWR at many frequencies in a row and plotting it. The dip shows where the antenna is resonant."],
+nanovna:["NanoVNA / Site Master","Antenna and cable analyzers. NanoVNA is a hobby vector network analyzer around $70. Site Master is the Anritsu tool LMR techs use to sweep antennas and find cable faults."],
+netgain:["Net gain","Antenna gain minus feedline loss. Positive means the antenna adds more than the coax takes away."],
+erp:["ERP","Effective radiated power. Transmit power × net gain, compared to a dipole. It is what the signal looks like in the antenna's best direction."],
+eirp:["EIRP","Like ERP but compared to an isotropic antenna. EIRP = ERP × 1.64, or +2.15 dB."],
+feedpoint:["Feedpoint","Where the coax connects to the antenna. Its impedance is what the coax sees."],
+groundplane:["Ground plane / radials","Wires or a metal surface under a quarter-wave vertical that act as the antenna's other half. A car roof works as one."],
+polarization:["Polarization","The orientation of the wave's electric field, set by the antenna. Vertical antennas send vertical waves. Mismatched polarization costs signal."],
+repeater:["Repeater","A station on a hill or tower that receives on one frequency and retransmits on another at the same time. It stretches handheld range from a few km to tens of km."],
+rptinput:["You transmit (repeater input)","The frequency the repeater listens on. Your radio jumps here only while you key the mic."],
+rptoutput:["Repeater output","The frequency the repeater transmits on. Directories list this one. You listen here."],
+offset:["Offset","The gap between a repeater's output and input. Standard is 600 kHz on 2 m and 5 MHz on 70 cm. Minus or plus tells your radio which way to shift."],
+duplex:["Duplex","Whether your radio shifts frequency when it transmits. Minus or plus for a repeater. Simplex for radio to radio."],
+simplex:["Simplex","Transmit and receive on the same frequency, radio to radio, no repeater."],
+access:["Access tone","The tone or code a repeater needs before it will retransmit you."],
+tonemode:["Tone mode","Tone sends a subaudible tone when you transmit. TSQL also keeps your speaker quiet unless the incoming signal carries that tone. DCS uses a digital code instead."],
+ctcss:["CTCSS tone","A low tone, 67 to 254 Hz, mixed under your voice and filtered out so nobody hears it. Repeaters use it to ignore interference. Also called PL tone."],
+tsql:["TSQL","Tone squelch. Sends the tone and also keeps your speaker quiet unless received signals carry the same tone."],
+dcs:["DCS code","Digital-coded squelch. Same job as CTCSS, using a repeating digital code instead of a tone. Codes are three digits, like 023."],
+channelname:["Channel name","The short tag shown on the radio's display."],
+squelch:["Squelch","Mutes the speaker until a signal is strong enough or carries the right tone."],
+chirp:["CHIRP","Free software that programs many ham radios from a computer, including the FT-60 with a programming cable. Channels live in a spreadsheet-style grid."],
+codeplug:["Code plug","The full programming file for a commercial radio: channels, talkgroups, tones, keys, button settings. LMR techs build and load these."],
+linkbudget:["Link budget","Start with transmit power, add gains, subtract losses. Compare what arrives with what the receiver needs."],
+fspl:["Free-space path loss","Signal spreading out over distance in empty space. It grows 6 dB each time distance doubles, and more at higher frequency with the same antennas."],
+rxlevel:["Received level","Signal strength at the receiver input, in dBm. More negative is weaker."],
+sensitivity:["Sensitivity","The weakest signal a receiver can still use. More negative is better. A typical FM handheld is about −121 dBm (0.2 µV)."],
+margin:["Fade margin","Received level minus sensitivity. Your safety buffer against fading and obstacles. Aim for 10 dB or more, more for rough terrain."],
+horizon:["Radio horizon","How far two antennas can see each other before Earth's curve blocks the path. Raising either antenna pushes it out."],
+fresnel:["Fresnel zone","A football-shaped space around the straight line between antennas. Keep 60% of it clear of trees and buildings or the signal weakens."],
+clutter:["Terrain / clutter loss","Extra loss from hills, buildings, trees, and bodies. Free-space math leaves it out, so you add it yourself."],
+receiver:["Receiver type","FM voice uses a sensitivity you enter. LoRa calculates sensitivity from spreading factor and bandwidth."],
+lora:["LoRa","A long-range, low-speed radio method used by Meshtastic. It trades speed for the ability to decode signals below the noise floor."],
+sf:["Spreading factor","How long LoRa stretches each symbol. Higher SF hears weaker signals but sends data slower and stays on the air longer."],
+lorabw:["LoRa bandwidth","Width of the LoRa signal. Narrower is more sensitive but slower."],
+lorarate:["LoRa data rate","Approximate bits per second for this SF and bandwidth. Meshtastic LongFast lands near 1 kbps."],
+lmr:["LMR","Land mobile radio. Two-way radio systems for police, fire, utilities, bases, and businesses. Licensed under FCC Part 90."],
+part90:["Part 90","The FCC rules for private land mobile radio. Radios must be certified for it and stations must be licensed."],
+p25:["P25","Project 25. The digital LMR standard for US public safety and federal users. Supports AES encryption and interoperable trunking."],
+dmr:["DMR","Digital Mobile Radio. A digital standard popular with businesses and hams. Two voice slots per 12.5 kHz channel."],
+poc:["PoC","Push-to-talk over cellular. Radio-style talk groups carried over the cell network as data. Depends on towers being up."],
+fdma:["FDMA","Frequency division. Each conversation gets its own channel."],
+tdma:["TDMA","Time division. Two conversations share one channel by taking turns in fast time slots."],
+trunked:["Trunked system","A controller hands out channels on demand to talk groups, like a phone switch. More users fit on fewer frequencies."],
+talkaround:["Talkaround","Radio to radio directly, bypassing the repeater or trunked site. The LMR word for simplex."],
+aes:["AES-256","The same encryption standard used in IT. In P25 it protects voice, but only when every radio has the right key loaded."],
+kvl:["Key variable loader (KVL)","A handheld device that loads encryption keys into radios by cable. Key handling is where LMR and cybersecurity meet."],
+otar:["OTAR","Over-the-air rekeying. Sending new encryption keys to radios by radio instead of by cable."],
+grol:["GROL","General Radiotelephone Operator License. An FCC commercial license, Elements 1 and 3, that many LMR employers want."],
+sdr:["SDR","Software-defined radio. A receiver that digitizes a slice of spectrum so software does the filtering and decoding. A $40 RTL-SDR covers roughly 24 to 1766 MHz."],
+tetra:["TETRA","Europe's main digital public safety radio standard, similar in role to P25."],
+narrowband:["Narrowbanding","The FCC requirement that Part 90 VHF/UHF systems move from 25 kHz to 12.5 kHz channels by 2013."],
+modulation:["Modulation","Putting information onto a carrier by changing it. Change its strength for AM, its frequency for FM."],
+modmode:["Modulation mode","AM varies the carrier's strength. FM varies its frequency. Ham and LMR voice on VHF/UHF is FM."],
+carrier:["Carrier","The steady radio wave that modulation rides on."],
+carrierlevel:["Carrier level","Carrier strength compared with no modulation. In FM it shrinks as power moves into sidebands. In AM it stays fixed."],
+sideband:["Sidebands","New frequencies created on each side of the carrier by modulation. They carry the actual information."],
+sidebandpower:["Sideband power","Share of total power sitting in the sidebands, where the information is."],
+audiotone:["Audio tone (fm)","The pitch of the test tone doing the modulating. Voice is a mix of tones up to about 3 kHz."],
+deviation:["Deviation (Δf)","How far FM swings the frequency away from center. Ham wide FM uses ±5 kHz. Narrowband uses ±2.5 kHz. Too much spills into the next channel."],
+amdepth:["Modulation depth","How hard AM varies the carrier's strength. 100% swings it from zero to double. Over 100% distorts."],
+modindex:["Modulation index","For FM, β = deviation ÷ audio frequency. Higher β means more sidebands and more bandwidth. For AM it is the depth, m."],
+sigbw:["Occupied bandwidth","How much spectrum the signal takes. FM uses Carson's rule. AM takes twice the audio frequency."],
+carson:["Carson's rule","A quick FM bandwidth estimate: 2 × (deviation + highest audio frequency). Covers about 98% of the power."],
+bessel:["Bessel null","Modulation indexes where the FM carrier drops to zero. The first is β ≈ 2.405. Techs use it to set deviation precisely."],
+spectrum:["Spectrum","Strength plotted against frequency. Each vertical line is one frequency component. This is what an SDR or spectrum analyzer shows."],
+waterfall:["Waterfall","A spectrum display that scrolls over time, with color for strength. The standard view in SDR software."]
+};
+const TERMS=[
+[/standing[- ]wave envelope/i,"envelope"],[/standing waves?/i,"standingwave"],[/characteristic impedance/i,"z0"],[/\bZ0\b/,"z0"],[/\bZL\b/,"impedance"],
+[/reflected wave/i,"reflectedwave"],[/forward (wave|power)/i,"forward"],[/wavelength/i,"wavelength"],[/λ/,"wavelength"],[/target frequency/i,"target"],[/\bfrequency\b/i,"frequency"],
+[/decibels?/i,"db"],[/\bdBm\b/,"dbm"],[/\bdBi\b/,"dbi"],[/\bdBd\b/,"dbd"],[/\bSWR\b/,"swr"],[/\|?Γ\|?/,"gamma"],[/return loss/i,"returnloss"],
+[/reactance/i,"reactance"],[/\bimpedance\b/i,"impedance"],[/\bresonan(t|ce)\b/i,"resonance"],[/\bsweep\b/i,"sweep"],[/NanoVNA|Site Master/,"nanovna"],
+[/\bEIRP\b/,"eirp"],[/\bERP\b/,"erp"],[/\brepeaters?\b/i,"repeater"],[/\boffset\b/i,"offset"],[/subaudible tone|access tone|\bCTCSS\b/i,"ctcss"],[/\bTSQL\b/,"tsql"],
+[/\bsimplex\b/i,"simplex"],[/\btalkaround\b/i,"talkaround"],[/Part 90/,"part90"],[/link budget/i,"linkbudget"],[/free[- ]space( path)? loss|\bFSPL\b/i,"fspl"],
+[/\bsensitivity\b/i,"sensitivity"],[/radio horizon/i,"horizon"],[/Fresnel/,"fresnel"],[/\bLoRa\b/,"lora"],[/spreading factor/i,"sf"],
+[/Land mobile radio|\bLMR\b/i,"lmr"],[/\bP25\b/,"p25"],[/\bDMR\b/,"dmr"],[/Push-to-talk over cellular|\bPoC\b/i,"poc"],[/\bFDMA\b/,"fdma"],[/\bTDMA\b/,"tdma"],
+[/\btrunked\b/i,"trunked"],[/\bAES(-256)?\b/,"aes"],[/\bOTAR\b/,"otar"],[/key variable loader|\bKVL\b/i,"kvl"],[/\bGROL\b/,"grol"],[/\bSDRs?\b/,"sdr"],
+[/\bTETRA\b/,"tetra"],[/\bmodulation\b/i,"modulation"],[/\bcarrier\b/i,"carrier"],[/\bsidebands?\b/i,"sideband"],[/\bdeviation\b|Δf/i,"deviation"],
+[/Carson/,"carson"],[/Bessel/,"bessel"],[/\bspectrum\b/i,"spectrum"],[/\bwaterfall\b/i,"waterfall"],[/\bphasors?\b/i,"phasor"],[/\bphase\b(?! [12])/i,"phase"],
+[/\bperiod\b/i,"period"],[/\bV peak\b/,"vpeak"],[/picket fencing/i,"picket"],[/\bfeedlines?\b|\bcoax\b/i,"coax"],[/\bdipole\b/i,"dipole"],
+[/ground plane|\bradials\b/i,"groundplane"],[/\bpolarization\b/i,"polarization"],[/narrowband(ing)?/i,"narrowband"],[/code plugs?/i,"codeplug"],[/\bCHIRP\b/,"chirp"],
+[/Ohm's law/i,"ohm"],[/path difference/i,"pathdiff"],[/\bbeat(s|ing)?\b/i,"beat"],[/\breflection\b|\bmultipath\b/i,"multipath"],[/\bsquelch\b/i,"squelch"],
+[/Space view/,"spaceview"],[/Scope view/,"scopeview"],[/2:1 line/,"bw21"],[/target frequency/i,"target"],[/\bfeedpoint\b/i,"feedpoint"],[/\bisotropic\b/i,"dbi"]
+];
+const SKIP="button,output,select,input,textarea,.val,.term,script,style,canvas,svg";
+function tagTerms(root){
+  const used=new Set();
+  for(const [re,key] of TERMS){
+    if(used.has(key))continue;
+    const w=document.createTreeWalker(root,NodeFilter.SHOW_TEXT,{acceptNode:n=>n.parentElement&&n.parentElement.closest(SKIP)?NodeFilter.FILTER_REJECT:NodeFilter.FILTER_ACCEPT});
+    let n;while((n=w.nextNode())){
+      const m=re.exec(n.data);if(!m||!m[0])continue;
+      const mid=n.splitText(m.index);mid.splitText(m[0].length);
+      const sp=document.createElement("span");sp.className="term";sp.dataset.tip=key;sp.tabIndex=0;
+      mid.parentNode.replaceChild(sp,mid);sp.appendChild(mid);used.add(key);break;
+    }
+  }
+}
+const FIELD_TIPS={
+"m-lam":"wavelength","m-band":"band","m-half":"dipole","m-quarter":"quarterwave","m-ratio":"ratio","m-db":"db","m-p1dbm":"dbm","m-p2dbm":"dbm","m-r":"resistance","m-pw":"power",
+"m-f":"frequency","m-p1":"power","m-p2":"power","m-e":"voltage","m-i":"current",
+"w-lam":"wavelength","w-qw":"quarterwave","w-per":"period","w-vpk":"vpeak","w-sum":"sumdb","w-f":"frequency","w-p":"dbm","w-ba":"bstrength","w-bph":"phase","w-bdf":"beat",
+"s-g":"gamma","s-swr":"swr","s-swr-in":"swrradio","s-rl":"returnloss","s-refl":"reflected","s-ml":"mismatch","s-cl":"coaxloss","s-pa":"radiated",
+"s-r":"resistance","s-x":"reactance","s-z0":"z0","s-cable":"coaxtype","s-len":"coaxloss","s-f":"frequency","s-p":"txpower",
+"a-f0":"resonance","a-swr":"swr","a-bw":"bw21","a-stat":"trim","e-net":"netgain","e-erp":"erp","e-eirp":"eirp",
+"a-type":"anttype","a-f":"target","a-len":"trim","e-p":"txpower","e-l":"coaxloss","e-g":"dbd",
+"r-tx":"rptinput","r-rx":"rptoutput","r-off":"offset","r-acc":"access","r-f":"rptoutput","r-dup":"duplex","r-tm":"tonemode","r-tone":"ctcss","r-dcs":"dcs","r-name":"channelname",
+"l-eirp":"eirp","l-fspl":"fspl","l-rx":"rxlevel","l-sens-o":"sensitivity","l-m":"margin","l-hz":"horizon","l-fr":"fresnel","l-rate":"lorarate",
+"l-p":"dbm","l-gt":"dbi","l-lt":"coaxloss","l-gr":"dbi","l-lr":"coaxloss","l-f":"frequency","l-d":"fspl","l-x":"clutter","l-h1":"horizon","l-h2":"horizon","l-mode":"receiver","l-sens":"sensitivity","l-sf":"sf","l-bw":"lorabw",
+"g-v1":"modindex","g-bw":"sigbw","g-car":"carrierlevel","g-sb":"sidebandpower","g-mode":"modmode","g-fm":"audiotone","g-dev":"deviation","g-m":"amdepth"
+};
+function markEl(el,key){el.classList.add("term");el.dataset.tip=key;el.tabIndex=0;}
+function attachFieldTips(){
+  for(const [id,key] of Object.entries(FIELD_TIPS)){
+    const el=document.getElementById(id);if(!el)continue;
+    const ro=el.closest(".ro");
+    if(ro){markEl(ro.querySelector(".k"),key);continue;}
+    const lab=document.querySelector(`label[for="${id}"]`);if(!lab)continue;
+    const tn=Array.from(lab.childNodes).find(n=>n.nodeType===3&&n.data.trim());if(!tn)continue;
+    const sp=document.createElement("span");markEl(sp,key);lab.replaceChild(sp,tn);sp.appendChild(tn);
+  }
+}
+const tip=document.createElement("div");tip.id="tip";tip.setAttribute("role","tooltip");tip.hidden=true;document.body.appendChild(tip);
+let tipEl=null,pDown=false;
+function showTip(el){
+  const g=GL[el.dataset.tip];if(!g)return;
+  if(tipEl&&tipEl!==el)tipEl.removeAttribute("aria-describedby");
+  tipEl=el;tip.textContent="";const b=document.createElement("b");b.textContent=g[0];tip.appendChild(b);tip.appendChild(document.createTextNode(g[1]));tip.hidden=false;
+  const r=el.getBoundingClientRect(),tw=tip.offsetWidth,th=tip.offsetHeight,vw=document.documentElement.clientWidth,vh=window.innerHeight;
+  let x=r.left+r.width/2-tw/2;x=Math.max(12,Math.min(x,vw-tw-12));
+  let y=r.bottom+8;if(y+th>vh-12)y=r.top-th-8;if(y<12)y=12;
+  tip.style.left=x+"px";tip.style.top=y+"px";el.setAttribute("aria-describedby","tip");
+}
+function hideTip(){if(tipEl)tipEl.removeAttribute("aria-describedby");tipEl=null;tip.hidden=true;}
+document.addEventListener("pointerdown",e=>{pDown=e.pointerType!=="mouse";},true);
+document.addEventListener("pointerover",e=>{if(e.pointerType!=="mouse")return;const t=e.target.closest&&e.target.closest(".term");if(t)showTip(t);});
+document.addEventListener("pointerout",e=>{if(e.pointerType!=="mouse")return;const t=e.target.closest&&e.target.closest(".term");if(t&&!(e.relatedTarget&&t.contains(e.relatedTarget)))hideTip();});
+document.addEventListener("focusin",e=>{if(pDown)return;const t=e.target.closest&&e.target.closest(".term");if(t)showTip(t);});
+document.addEventListener("focusout",e=>{if(pDown)return;if(e.target.closest&&e.target.closest(".term"))hideTip();});
+document.addEventListener("click",e=>{
+  const t=e.target.closest&&e.target.closest(".term");const touch=pDown;pDown=false;
+  if(t){if(t.closest("label"))e.preventDefault();if(touch&&t===tipEl)hideTip();else showTip(t);return;}
+  hideTip();
+});
+document.addEventListener("keydown",e=>{if(e.key==="Escape")hideTip();if((e.key==="Enter"||e.key===" ")&&e.target.classList&&e.target.classList.contains("term")){e.preventDefault();e.target===tipEl&&!tip.hidden?hideTip():showTip(e.target);}});
+window.addEventListener("scroll",hideTip,{passive:true});
+window.addEventListener("resize",hideTip);
+
+/* ---------- modules and questions ---------- */
+const MODS=[
+ {id:"math",name:"RF math"},{id:"waves",name:"Wave scope"},{id:"swr",name:"Feedline & SWR"},{id:"antenna",name:"Antennas"},
+ {id:"repeater",name:"Repeaters"},{id:"link",name:"Link budget"},{id:"lmr",name:"LMR systems"},{id:"signals",name:"Modulation"}
+];
+const Q={
+math:{p:{id:"math-p",p:"You raise power from 5 W to 10 W. How many dB is that?",o:["1 dB","3 dB","6 dB","10 dB"],a:1,w:"Doubling power is +3 dB. 10 × log10(10 ÷ 5) = 3.01 dB. Halving is −3 dB."},
+ q:[{id:"math-1",p:"Wavelength at 440 MHz is closest to:",o:["17 cm","68 cm","2 m","6.8 m"],a:1,w:"300 ÷ 440 = 0.68 m. That is why UHF ham is called the 70 cm band."},
+    {id:"math-2",p:"A 10 dB gain multiplies power by:",o:["2","3","10","100"],a:2,w:"Every 10 dB is a factor of 10. 20 dB is 100 times, 30 dB is 1000 times."},
+    {id:"math-3",p:"A mobile radio draws 8 A at 13.8 V while transmitting. DC input power?",o:["1.7 W","21.8 W","110 W","138 W"],a:2,w:"P = E × I = 13.8 × 8 = 110.4 W. RF output is lower because the final amplifier is not 100% efficient."},
+    {id:"math-4",p:"Part 90 VHF high-band land mobile channels sit mostly in:",o:["144 to 148 MHz","150 to 174 MHz","420 to 450 MHz","902 to 928 MHz"],a:1,w:"VHF high-band LMR is 150 to 174 MHz. 144 to 148 MHz is the 2 m ham band. UHF LMR is mostly 450 to 470 MHz."}]},
+waves:{p:{id:"wav-p",p:"Two equal signals reach your antenna. One took a path half a wavelength longer. What do you receive?",o:["Twice the power","3 dB more","Close to nothing","No change"],a:2,w:"Half a wavelength is 180° of phase. Equal and opposite waves cancel. Turn on signal B at 100% and 180° to see it."},
+ q:[{id:"wav-1",p:"You switch from 146 MHz to 440 MHz. The wavelength:",o:["Triples","Stays the same","Drops to about one third","Drops to about one half"],a:2,w:"λ = 300 ÷ f. 2.05 m becomes 0.68 m. Higher frequency means shorter waves and shorter antennas."},
+    {id:"wav-2",p:"Two equal signals arrive exactly in phase. Compared with one alone, power rises by:",o:["0 dB","3 dB","6 dB","10 dB"],a:2,w:"Voltages add. Twice the voltage is four times the power, +6 dB. Set B to 100% and 0° to check. Two unrelated signals average only +3 dB."},
+    {id:"wav-3",p:"A VHF mobile signal flutters rapidly while the car moves through town. This is called:",o:["Picket fencing","Ducting","Sporadic E","Splatter"],a:0,w:"Picket fencing. Reflections off buildings arrive over changing path lengths, so they swing between adding and canceling as the car moves."},
+    {id:"wav-4",p:"Cut transmit power from 40 W to 10 W. The wave's voltage height becomes:",o:["25%","50%","71%","No change"],a:1,w:"Power drops 6 dB, to one quarter. Voltage follows the square root of power, so height drops to one half. Drag the power slider to see it."}]},
+swr:{p:{id:"swr-p",p:"A pure 100 Ω resistive load on 50 Ω coax. What is the SWR?",o:["1:1","1.5:1","2:1","4:1"],a:2,w:"For a resistive load, SWR = larger ÷ smaller = 100 ÷ 50 = 2:1. Γ = (100 − 50) ÷ (100 + 50) = 0.33, so about 11% of the power reflects."},
+ q:[{id:"swr-1",p:"An SWR of 3:1 reflects roughly what share of forward power?",o:["3%","11%","25%","50%"],a:2,w:"|Γ| = (3 − 1) ÷ (3 + 1) = 0.5. Reflected power = |Γ|² = 25%."},
+    {id:"swr-2",p:"You read SWR at the radio end of 150 ft of RG-58 on UHF. The reading is:",o:["Accurate","Better than the SWR at the antenna","Worse than the SWR at the antenna","Always 1:1"],a:1,w:"Coax loss attenuates the reflected wave on the way up and again on the way back, so lossy line hides a bad antenna. Set 150 ft of RG-58 at 440 MHz on the bench and compare the two SWR readouts."},
+    {id:"swr-3",p:"Which coax has the lowest loss at 440 MHz?",o:["RG-58","RG-8X","RG-213","LMR-400"],a:3,w:"LMR-400 runs about 2.7 dB per 100 ft at 450 MHz versus about 10.5 dB for RG-58."},
+    {id:"swr-4",p:"The load has R = 50 Ω but X = +60 Ω. On 50 Ω coax, the SWR is:",o:["1:1","Above 1:1","Exactly 0","Undefined"],a:1,w:"Any reactance makes ZL differ from Z0, so Γ is not zero. Set R to 50 and move X on the bench to see it."}]},
+antenna:{p:{id:"ant-p",p:"Your sweep shows the SWR dip at 140 MHz. You want it at 146 MHz. You should:",o:["Shorten the element","Lengthen the element","Add more coax","Raise transmit power"],a:0,w:"Resonant frequency rises as the element gets shorter. Trim a little at a time and sweep again."},
+ q:[{id:"ant-1",p:"A quarter-wave vertical for 146 MHz is about how long?",o:["9.6 in","19 in","38 in","6.4 ft"],a:1,w:"234 ÷ 146 = 1.60 ft = 19.2 in. A half-wave dipole is about twice that, roughly 38 in end to end."},
+    {id:"ant-2",p:"0 dBd equals how many dBi?",o:["0 dBi","2.15 dBi","3 dBi","6 dBi"],a:1,w:"dBd compares to a half-wave dipole, which has 2.15 dB of gain over an isotropic radiator. dBi = dBd + 2.15."},
+    {id:"ant-3",p:"FM repeaters and LMR systems mostly use which polarization?",o:["Horizontal","Vertical","Circular","It does not matter"],a:1,w:"Vertical. Mobile and handheld antennas are vertical, and a cross-polarized link can lose 20 dB or more."},
+    {id:"ant-4",p:"Drooping the radials of a quarter-wave ground plane down about 45° mainly:",o:["Adds 6 dB of gain","Raises feedpoint impedance toward 50 Ω","Changes polarization","Halves the resonant frequency"],a:1,w:"Flat radials give roughly 36 Ω. Drooping them raises it toward 50 Ω for a better match. Switch antenna types on the bench to compare."}]},
+repeater:{p:{id:"rpt-p",p:"You hear a repeater clearly, but it never responds when you key up. Most likely cause?",o:["Missing or wrong CTCSS tone","Antenna is too long","Volume is too low","Squelch is open"],a:0,w:"Most repeaters need a subaudible tone to open their receiver. You still hear the output because listening does not need the tone. A wrong offset direction is the second suspect."},
+ q:[{id:"rpt-1",p:"Standard repeater offset on 2 m:",o:["100 kHz","600 kHz","1.6 MHz","5 MHz"],a:1,w:"600 kHz on 2 m, 1.6 MHz on 1.25 m, 5 MHz on 70 cm."},
+    {id:"rpt-2",p:"A repeater outputs on 146.940 MHz with a minus offset. You transmit on:",o:["146.340 MHz","147.540 MHz","146.940 MHz","141.940 MHz"],a:0,w:"146.940 − 0.600 = 146.340 MHz. Your radio does this automatically once duplex and offset are set."},
+    {id:"rpt-3",p:"In TSQL mode your radio:",o:["Sends a tone and only opens squelch on the same received tone","Only sends a tone","Scrambles the audio","Disables the squelch"],a:0,w:"Tone mode sends the tone on transmit only. TSQL sends it and also requires it on receive, which mutes traffic without that tone."},
+    {id:"rpt-4",p:"Can you program an FT-60 onto a business LMR channel and transmit?",o:["Yes, any radio can transmit anywhere","No. It is not certified for Part 90 and you have no station authorization","Yes, with a Technician license","Only below 5 W"],a:1,w:"Part 90 requires certified equipment and a licensed station. LMR shops use commercial Part 90 radios."}]},
+link:{p:{id:"link-p",p:"You double the distance. Free-space path loss increases by:",o:["3 dB","6 dB","10 dB","20 dB"],a:1,w:"FSPL scales with 20 × log10(distance). Doubling distance adds 6 dB. Ten times the distance adds 20 dB."},
+ q:[{id:"link-1",p:"Raising LoRa spreading factor from SF7 to SF12:",o:["Raises the data rate","Improves sensitivity but slows data","Changes the band","Raises transmit power"],a:1,w:"Each SF step needs about 2.5 dB less SNR but roughly halves the bit rate. Range costs airtime. Switch the receiver to LoRa on the bench and step through SF."},
+    {id:"link-2",p:"VHF/UHF range between ground stations is mostly limited by:",o:["The ionosphere","Line of sight and the radio horizon","Coax color","Battery voltage"],a:1,w:"VHF and UHF normally travel line of sight. Height buys range: horizon ≈ 4.12 × (√h1 + √h2) km, heights in meters."},
+    {id:"link-3",p:"A free-space budget shows 60 dB of margin between two handhelds at ground level. Realistic?",o:["Yes, free space is accurate","No. Terrain, buildings, and bodies can take 20 to 40 dB or more","No, free space is pessimistic","Only at night"],a:1,w:"Free space is the best case. Use the clutter control to model the real world."},
+    {id:"link-4",p:"You raise one antenna from 1.5 m to 30 m. The radio horizon to a 1.5 m handheld:",o:["Barely changes","Roughly triples","Drops","Doubles exactly"],a:1,w:"4.12 × (√1.5 + √1.5) ≈ 10 km. 4.12 × (√30 + √1.5) ≈ 27.6 km. Height is the cheapest gain in VHF/UHF."}]},
+lmr:{p:{id:"lmr-p",p:"A hurricane takes down local cell sites. Which radios still talk radio to radio?",o:["PoC radios only","LMR radios on simplex or talkaround","Neither","Both, equally"],a:1,w:"PoC rides the cellular network. LMR can run unit to unit with no infrastructure. That is why public safety keeps LMR as its backbone."},
+ q:[{id:"lmr-1",p:"P25 Phase 2 fits how many voice paths in one 12.5 kHz channel?",o:["1","2","4","8"],a:1,w:"Phase 2 uses two-slot TDMA. Phase 1 is FDMA with one path per channel."},
+    {id:"lmr-2",p:"FCC narrowbanding moved Part 90 VHF/UHF systems to what channel width by 2013?",o:["25 kHz","12.5 kHz","6.25 kHz","5 kHz"],a:1,w:"The deadline was January 1, 2013, for 12.5 kHz or equivalent efficiency."},
+    {id:"lmr-3",p:"Which FCC license do LMR technician postings list most often?",o:["Amateur Extra","General Radiotelephone Operator License (GROL)","Restricted Radiotelephone Operator Permit","None"],a:1,w:"GROL, Elements 1 and 3. A ham license shows interest and fundamentals. GROL is the job credential."},
+    {id:"lmr-4",p:"Where does LMR overlap most with cybersecurity?",o:["Antenna trimming","Encryption key management and key loading","Coax selection","Battery care"],a:1,w:"Encrypted P25 depends on key material loaded by a KVL or over the air. Poor key handling breaks encryption no matter how strong the cipher is."}]},
+signals:{p:{id:"sig-p",p:"FM with ±5 kHz deviation and 3 kHz audio. Carson bandwidth?",o:["6 kHz","10 kHz","16 kHz","25 kHz"],a:2,w:"Carson: BW ≈ 2 × (Δf + fm) = 2 × (5 + 3) = 16 kHz. Narrowband FM (±2.5 kHz) with 3 kHz audio gives 11 kHz."},
+ q:[{id:"sig-1",p:"In FM, the audio is carried by:",o:["Changes in amplitude","Changes in frequency","Changes in polarization","Pulse width"],a:1,w:"FM varies frequency in step with the audio. Amplitude stays constant, which is why FM rejects static."},
+    {id:"sig-2",p:"Set fm = 1 kHz and raise deviation until the carrier line vanishes. What β did you find?",o:["About 1.0","About 2.4","About 5.0","The carrier never vanishes"],a:1,w:"The carrier (J0) hits its first null at β ≈ 2.405. Techs use this Bessel null to set deviation with a spectrum analyzer or SDR."},
+    {id:"sig-3",p:"AM at 100% modulation puts what share of total power in the sidebands?",o:["0%","33%","50%","100%"],a:1,w:"Sideband power = m² ÷ (2 + m²) = 1 ÷ 3. Two thirds stays in the carrier, which carries no information. SSB removes it."},
+    {id:"sig-4",p:"On an SDR waterfall, the vertical axis is usually:",o:["Frequency","Time","Voltage","SWR"],a:1,w:"Frequency runs left to right, time scrolls vertically, and color shows strength."}]}
+};
+const TOTAL=MODS.reduce((n,m)=>n+1+Q[m.id].q.length,0);
+
+/* ---------- tabs ---------- */
+const tablist=$("#tablist");
+MODS.forEach((m,i)=>{
+  const b=document.createElement("button");
+  b.className="tab";b.type="button";b.setAttribute("role","tab");b.id="tab-"+m.id;b.dataset.mod=m.id;
+  b.setAttribute("aria-controls","m-"+m.id);
+  b.innerHTML=`<span class="n">0${i+1}</span>${m.name}<span class="s" id="sc-${m.id}"></span>`;
+  b.addEventListener("click",()=>show(m.id,true));
+  tablist.appendChild(b);
+});
+let active=null;
+function show(id,user){
+  active=id;
+  MODS.forEach(m=>{
+    const on=m.id===id;
+    document.getElementById("m-"+m.id).hidden=!on;
+    const t=document.getElementById("tab-"+m.id);t.setAttribute("aria-selected",on?"true":"false");t.tabIndex=on?0:-1;
+    if(on&&user)t.scrollIntoView({block:"nearest",inline:"nearest"});
+  });
+  store.tab=id;save();
+  if(user){try{history.replaceState(null,"","#"+id);}catch(e){} window.scrollTo({top:0});}
+  requestAnimationFrame(()=>{redraw();syncBoxes();if(id==="swr"||id==="waves")startAnim();});
+}
+$$("[data-next]").forEach(b=>b.addEventListener("click",()=>show(b.dataset.next,true)));
+
+/* ---------- questions ---------- */
+function renderQ(q,mount,isPredict,mod){
+  const card=document.createElement("div");
+  if(!isPredict)card.className="qcard";
+  card.innerHTML=`<p class="label">${isPredict?"Predict first":"Question"}</p><p class="q-prompt"></p><div class="opts"></div><p class="why" hidden></p>`;
+  card.querySelector(".q-prompt").textContent=q.p;
+  const opts=card.querySelector(".opts");
+  q.o.forEach((t,i)=>{const b=document.createElement("button");b.type="button";b.className="opt";b.textContent=t;
+    b.addEventListener("click",()=>{if(store.answers[q.id]!==undefined)return;store.answers[q.id]=i;save();paint();refreshAll();});opts.appendChild(b);});
+  function paint(){
+    const ans=store.answers[q.id];const why=card.querySelector(".why");const btns=$$(".opt",card);
+    if(ans===undefined){btns.forEach(b=>{b.disabled=false;b.classList.remove("right","wrong");});why.hidden=true;return;}
+    btns.forEach((b,i)=>{b.disabled=true;b.classList.toggle("right",i===q.a);b.classList.toggle("wrong",i===ans&&ans!==q.a);});
+    const ok=ans===q.a;why.hidden=false;
+    why.innerHTML=`<span class="v ${ok?"ok":"no"}">${ok?"Correct.":"Not quite."}</span> `;
+    why.appendChild(document.createTextNode(q.w));tagTerms(why);
+  }
+  card._paint=paint;paint();mount.appendChild(card);return card;
+}
+const cards=[];
+MODS.forEach(m=>{
+  cards.push(renderQ(Q[m.id].p,$(`[data-predict="${m.id}"]`),true,m.id));
+  const grid=$(`[data-quiz="${m.id}"]`);Q[m.id].q.forEach(q=>cards.push(renderQ(q,grid,false,m.id)));
+});
+$$("[data-skip]").forEach(b=>b.addEventListener("click",()=>{store.skips[b.dataset.skip]=1;save();refreshAll();}));
+function refreshAll(){
+  let tot=0;
+  MODS.forEach(m=>{
+    const all=[Q[m.id].p,...Q[m.id].q];
+    const c=all.filter(q=>store.answers[q.id]===q.a).length;
+    const done=all.filter(q=>store.answers[q.id]!==undefined).length;
+    tot+=c;
+    const s=document.getElementById("sc-"+m.id);s.textContent=`${c}/${all.length}`;s.classList.toggle("done",done===all.length);
+    const unlocked=store.answers[Q[m.id].p.id]!==undefined||store.skips[m.id];
+    const bench=$(`[data-bench="${m.id}"]`);bench.classList.toggle("locked",!unlocked);
+    bench.querySelector(".lock").hidden=!!unlocked;
+  });
+  set("score-total",`${tot}<small> / ${TOTAL}</small>`);
+  redraw();
+}
+const resetBtn=$("#reset");let resetArm=0;
+resetBtn.addEventListener("click",()=>{
+  if(!resetArm){resetArm=setTimeout(()=>{resetArm=0;resetBtn.textContent="Reset answers";},4000);resetBtn.textContent="Tap again to confirm";return;}
+  clearTimeout(resetArm);resetArm=0;resetBtn.textContent="Reset answers";
+  store.answers={};store.skips={};save();cards.forEach(c=>c._paint());refreshAll();
+});
+
+/* ---------- canvas helpers ---------- */
+const cssv=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const C=()=>({ink:cssv("--ink"),muted:cssv("--muted"),line:cssv("--line"),fwd:cssv("--fwd"),refl:cssv("--refl"),good:cssv("--good"),bad:cssv("--bad"),bg:cssv("--bg")});
+function prep(cv){
+  const r=cv.getBoundingClientRect();const dpr=window.devicePixelRatio||1;
+  const W=Math.max(1,Math.round(r.width*dpr)),H=Math.max(1,Math.round(r.height*dpr));
+  if(cv.width!==W||cv.height!==H){cv.width=W;cv.height=H;}
+  const ctx=cv.getContext("2d");ctx.setTransform(dpr,0,0,dpr,0,0);ctx.clearRect(0,0,r.width,r.height);
+  return {ctx,w:r.width,h:r.height};
+}
+const MONO='11px "IBM Plex Mono", ui-monospace, monospace';
+function seg(ctx,x1,y1,x2,y2){ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke();}
+const visible=cv=>cv&&cv.offsetParent!==null&&cv.clientWidth>0;
+
+/* ---------- module 1: math ---------- */
+function bandOf(f){
+  const B=[[1.8,2,"160 m ham"],[3.5,4,"80 m ham"],[7,7.3,"40 m ham"],[10.1,10.15,"30 m ham"],[14,14.35,"20 m ham"],[18.068,18.168,"17 m ham"],[21,21.45,"15 m ham"],[24.89,24.99,"12 m ham"],[28,29.7,"10 m ham"],[50,54,"6 m ham"],[144,148,"2 m ham"],[150,174,"VHF LMR (Part 90)"],[222,225,"1.25 m ham"],[420,450,"70 cm ham"],[450,470,"UHF LMR (Part 90)"],[902,928,"33 cm ham, ISM, Meshtastic"],[1240,1300,"23 cm ham"]];
+  for(const [a,b,n] of B) if(f>=a&&f<=b) return n; return "Outside listed bands";
+}
+function updMath(){
+  const f=Math.max(0.001,num("m-f",146.52));const lam=299.792458/f;
+  set("m-lam",lam>=1?u(lam.toFixed(2),"m"):u((lam*100).toFixed(1),"cm"));
+  set("m-band",bandOf(f));
+  set("m-half",u((468/f*12).toFixed(1),"in"));
+  set("m-quarter",u((234/f*12).toFixed(1),"in"));
+  const p1=Math.max(1e-6,num("m-p1",5)),p2=Math.max(1e-6,num("m-p2",50));const db=10*log10(p2/p1);
+  set("m-ratio",u((p2/p1).toFixed(2),"×"));set("m-db",u((db>=0?"+":"")+db.toFixed(2),"dB"));
+  set("m-p1dbm",u((10*log10(p1*1000)).toFixed(1),"dBm"));set("m-p2dbm",u((10*log10(p2*1000)).toFixed(1),"dBm"));
+  const E=num("m-e",13.8),I=Math.max(1e-6,num("m-i",2));
+  set("m-r",u((E/I).toFixed(2),"Ω"));set("m-pw",u((E*I).toFixed(1),"W"));
+}
+
+/* ---------- wave scope ---------- */
+const WV={f:146.52,lam:2.05,amp:0.5,on:false,ba:0.8,bph:Math.PI/2,bdf:0};
+$$("[data-wf]").forEach(b=>b.addEventListener("click",()=>{$("#w-f").value=String(Math.log10(parseFloat(b.dataset.wf)));updWaves();}));
+function updWaves(){
+  const f=Math.pow(10,num("w-f",2.1659)),p=num("w-p",37),on=$("#w-b").checked,ba=num("w-ba",80)/100,bphd=num("w-bph",90),bdf=num("w-bdf",0)/100;
+  const lam=299.792458/f,P=Math.pow(10,p/10)/1000,vpk=Math.sqrt(2*P*50),amp=Math.sqrt(P/100);
+  ["w-ba","w-bph","w-bdf"].forEach(id=>{document.getElementById(id).disabled=!on;});
+  set("w-f-o",f.toFixed(f<100?2:1)+" MHz");
+  set("w-p-o",`= ${P>=1?P.toFixed(1)+" W":(P*1000).toFixed(0)+" mW"}`);
+  set("w-ba-o",Math.round(ba*100)+"% of A");
+  set("w-bph-o",`= ${(bphd/360*lam).toFixed(2)} m path`);
+  set("w-bdf-o",bdf===0?"none":"+"+(bdf*100).toFixed(1)+"%");
+  set("w-lam",lam>=1?u(lam.toFixed(2),"m"):u((lam*100).toFixed(1),"cm"));
+  set("w-qw",u((lam/4*100).toFixed(1),"cm"));
+  set("w-per",u((1000/f).toFixed(2),"ns"));
+  set("w-vpk",u(vpk.toFixed(1),"V"));
+  let lvl;
+  if(!on)lvl='<span class="chip info">B off</span>';
+  else if(bdf===0){const r=Math.sqrt(Math.max(0,1+ba*ba+2*ba*Math.cos(bphd*Math.PI/180)));
+    if(r<0.01)lvl='<span class="chip bad">&lt; −40 dB, cancelled</span>';
+    else{const d=20*log10(r);lvl=`${(d>=0?"+":"")+d.toFixed(1)}<small> dB</small> `+(d<=-6?'<span class="chip bad">fade</span>':d>=3?'<span class="chip good">boost</span>':'');}}
+  else{const mx=20*log10(1+ba),mn=(1-ba)<0.01?"< −40":(20*log10(1-ba)).toFixed(1);lvl=`${mn} to +${mx.toFixed(1)}<small> dB</small> <span class="chip warn">beating</span>`;}
+  set("w-sum",lvl);
+  Object.assign(WV,{f,lam,amp,on,ba,bph:bphd*Math.PI/180,bdf});
+  if(active==="waves")drawWaves(reduce?0.3:(performance.now()-t0)/1000);
+}
+function arrow(ctx,x1,y1,x2,y2,col,lw){
+  ctx.strokeStyle=col;ctx.fillStyle=col;ctx.lineWidth=lw;seg(ctx,x1,y1,x2,y2);
+  const L=Math.hypot(x2-x1,y2-y1);if(L<4)return;const a=Math.atan2(y2-y1,x2-x1),hs=Math.min(8,L*0.4);
+  ctx.beginPath();ctx.moveTo(x2,y2);ctx.lineTo(x2-hs*Math.cos(a-0.4),y2-hs*Math.sin(a-0.4));ctx.lineTo(x2-hs*Math.cos(a+0.4),y2-hs*Math.sin(a+0.4));ctx.closePath();ctx.fill();
+}
+function drawWaves(t){
+  const c=C();const wt=2*Math.PI*0.45*t;const {amp,on,ba,bph,bdf,lam,f}=WV;
+  const fmtL=v=>v>=1?v.toFixed(2)+" m":(v*100).toFixed(1)+" cm";
+  let cv=$("#cv-wspace");
+  if(visible(cv)){
+    const {ctx,w,h}=prep(cv);const L=14,Rp=14,T=44,B=34,pw=w-L-Rp,span=6;
+    const mid=T+(h-T-B)/2,sc=(h-T-B)/2/2.05,X=m=>L+m/span*pw;
+    ctx.font=MONO;ctx.lineWidth=1;ctx.strokeStyle=c.line;seg(ctx,L,mid,w-Rp,mid);
+    const ry=h-B+6;ctx.strokeStyle=c.muted;seg(ctx,L,ry,w-Rp,ry);
+    for(let k=0;k<=12;k++){const x=X(k/2),major=k%2===0;seg(ctx,x,ry,x,ry+(major?7:4));
+      if(major){ctx.fillStyle=c.muted;ctx.textAlign=k===0?"left":k===12?"right":"center";ctx.textBaseline="top";ctx.fillText((k/2)+" m",x,ry+9);}}
+    const N=Math.ceil(pw*2);
+    const draw=(fn,col,lw)=>{ctx.strokeStyle=col;ctx.lineWidth=lw;ctx.beginPath();for(let i=0;i<=N;i++){const m=i/N*span;const x=X(m),y=mid-fn(m)*sc;i?ctx.lineTo(x,y):ctx.moveTo(x,y);}ctx.stroke();};
+    const A=m=>amp*Math.sin(2*Math.PI*m/lam-wt);
+    const Bw=m=>ba*amp*Math.sin(2*Math.PI*m*(1+bdf)/lam-wt*(1+bdf)-bph);
+    if(on){draw(A,c.fwd,1.2);draw(Bw,c.refl,1.2);draw(m=>A(m)+Bw(m),c.ink,2.4);}else draw(A,c.fwd,2.4);
+    ctx.fillStyle=c.ink;ctx.strokeStyle=c.ink;ctx.lineWidth=1.2;ctx.textBaseline="middle";const by=10;
+    if(lam<=span){seg(ctx,X(0),by,X(lam),by);seg(ctx,X(0),by-5,X(0),by+5);seg(ctx,X(lam),by-5,X(lam),by+5);
+      const lbl="λ = "+fmtL(lam);const tw=ctx.measureText(lbl).width;ctx.textAlign="left";
+      ctx.fillText(lbl,X(lam)+6+tw<w-Rp?X(lam)+6:X(lam)-tw-6,by);}
+    else{ctx.textAlign="left";ctx.fillText("λ = "+fmtL(lam)+", longer than this view",X(0),by);}
+    const qw=lam/4;ctx.strokeStyle=c.good;ctx.lineWidth=4;seg(ctx,X(0),27,X(Math.min(qw,span)),27);
+    ctx.fillStyle=c.good;ctx.textAlign="left";const ql="¼λ antenna "+fmtL(qw);const qx=X(Math.min(qw,span))+6;
+    ctx.fillText(ql,qx+ctx.measureText(ql).width<w-Rp?qx:X(0),qx+ctx.measureText(ql).width<w-Rp?27:38);
+  }
+  cv=$("#cv-wtime");
+  if(visible(cv)){
+    const {ctx,w,h}=prep(cv);const L=10,Rp=10,T=10,B=22,pw=w-L-Rp,K=8;
+    const mid=T+(h-T-B)/2,sc=(h-T-B)/2/2.05;
+    ctx.font=MONO;ctx.lineWidth=1;
+    for(let k=0;k<=K;k++){const x=L+pw*k/K;ctx.strokeStyle=c.line;ctx.setLineDash([2,4]);seg(ctx,x,T,x,h-B);}
+    ctx.setLineDash([]);seg(ctx,L,mid,w-Rp,mid);
+    const N=Math.ceil(pw*2);
+    const A=x=>amp*Math.sin(2*Math.PI*K*x+wt);
+    const Bw=x=>ba*amp*Math.sin(2*Math.PI*K*x*(1+bdf)+wt*(1+bdf)+bph);
+    const draw=(fn,col,lw)=>{ctx.strokeStyle=col;ctx.lineWidth=lw;ctx.beginPath();for(let i=0;i<=N;i++){const x=i/N;const px=L+x*pw,py=mid-fn(x)*sc;i?ctx.lineTo(px,py):ctx.moveTo(px,py);}ctx.stroke();};
+    if(on){draw(A,c.fwd,1);draw(Bw,c.refl,1);draw(x=>A(x)+Bw(x),c.ink,2.2);}else draw(A,c.fwd,2.2);
+    ctx.fillStyle=c.muted;ctx.textBaseline="top";ctx.textAlign="left";ctx.fillText("0 ns",L,h-B+5);
+    ctx.textAlign="right";ctx.fillText((K*1000/f).toFixed(1)+" ns",w-Rp,h-B+5);
+    ctx.textAlign="center";ctx.fillText("time →",L+pw/2,h-B+5);
+  }
+  cv=$("#cv-wphasor");
+  if(visible(cv)){
+    const {ctx,w,h}=prep(cv);const cx=w/2,cy=h/2,R=Math.min(w,h)/2-14,s=R/2.05;
+    ctx.strokeStyle=c.line;ctx.lineWidth=1;seg(ctx,cx-R,cy,cx+R,cy);seg(ctx,cx,cy-R,cx,cy+R);
+    ctx.setLineDash([2,4]);ctx.beginPath();ctx.arc(cx,cy,amp*s,0,7);ctx.stroke();ctx.setLineDash([]);
+    const th=wt,ax=cx+Math.cos(th)*amp*s,ay=cy-Math.sin(th)*amp*s;
+    if(on){
+      const tb=th+bph+bdf*wt,bx=ax+Math.cos(tb)*ba*amp*s,by=ay-Math.sin(tb)*ba*amp*s;
+      const r=Math.hypot(bx-cx,by-cy);ctx.strokeStyle=c.muted;ctx.globalAlpha=0.5;ctx.beginPath();ctx.arc(cx,cy,r,0,7);ctx.stroke();ctx.globalAlpha=1;
+      arrow(ctx,cx,cy,ax,ay,c.fwd,2);arrow(ctx,ax,ay,bx,by,c.refl,2);arrow(ctx,cx,cy,bx,by,c.ink,2.6);
+    }else arrow(ctx,cx,cy,ax,ay,c.fwd,2.4);
+    ctx.font=MONO;ctx.fillStyle=c.muted;ctx.textAlign="left";ctx.textBaseline="top";ctx.fillText(on?"A + B":"A",6,6);
+  }
+}
+
+/* ---------- module 2: SWR ---------- */
+const CABLE={rg58:6.1,rg8x:4.5,rg213:2.8,lmr400:1.5}; // dB per 100 ft at 150 MHz, approximate
+const S={gr:0,gi:0};
+const swrFmt=s=>!Number.isFinite(s)||s>99?"&gt; 99:1":s.toFixed(2)+":1";
+function updSWR(){
+  const R=num("s-r",75),X=num("s-x",0),Z0=num("s-z0",50),len=num("s-len",50),f=Math.max(1,num("s-f",146)),P=Math.max(0,num("s-p",5));
+  set("s-r-o",R+" Ω");set("s-x-o",(X>0?"+":"")+X+" Ω");set("s-len-o",len+" ft");
+  const a=R-Z0,b=X,c=R+Z0,d=X,den=c*c+d*d;
+  S.gr=(a*c+b*d)/den;S.gi=(b*c-a*d)/den;
+  const g=Math.hypot(S.gr,S.gi);const swr=(1+g)/(1-g);
+  const A=CABLE[$("#s-cable").value]*Math.sqrt(f/150)*len/100;
+  const gin=g*Math.pow(10,-A/10);const swrIn=(1+gin)/(1-gin);
+  set("s-g",g.toFixed(3));set("s-swr",swrFmt(swr));set("s-swr-in",swrFmt(swrIn));
+  set("s-rl",g<0.001?u("&gt; 60","dB"):u((-20*log10(g)).toFixed(1),"dB"));
+  set("s-refl",u((g*g*100).toFixed(1),"%"));
+  set("s-ml",u((-10*log10(Math.max(1e-9,1-g*g))).toFixed(2),"dB"));
+  set("s-cl",u(A.toFixed(2),"dB"));
+  const pa=P*Math.pow(10,-A/10)*(1-g*g);
+  set("s-pa",u(pa<10?pa.toFixed(2):pa.toFixed(1),"W"));
+  if(active==="swr"&&reduce)drawSWR(0.3);
+}
+function drawSWR(t){
+  const cv=$("#cv-swr");if(!visible(cv))return;
+  const {ctx,w,h}=prep(cv);const c=C();
+  const L=12,Rp=12,top=26,bot=14,pw=w-L-Rp,mid=top+(h-top-bot)/2,amp=(h-top-bot)/2/2.05;
+  const wt=2*Math.PI*0.6*t;const gr=S.gr,gi=S.gi;
+  ctx.lineWidth=1;ctx.strokeStyle=c.line;seg(ctx,L,mid,w-Rp,mid);
+  for(let k=0;k<=4;k++){const x=L+pw*k/4;ctx.setLineDash([2,4]);seg(ctx,x,top-4,x,h-bot);}
+  ctx.setLineDash([]);
+  const pts=[];
+  for(let i=0;i<=pw;i++){
+    const dl=(1-i/pw)*2,bd=2*Math.PI*dl,cs=Math.cos(bd),sn=Math.sin(bd);
+    const Sr=cs+gr*cs+gi*sn,Si=sn+gi*cs-gr*sn;
+    pts.push({x:L+i,env:Math.hypot(Sr,Si),f:Math.cos(bd+wt),r:gr*Math.cos(wt-bd)-gi*Math.sin(wt-bd)});
+  }
+  ctx.globalAlpha=0.16;ctx.fillStyle=c.muted;ctx.beginPath();
+  pts.forEach((p,i)=>i?ctx.lineTo(p.x,mid-p.env*amp):ctx.moveTo(p.x,mid-p.env*amp));
+  for(let i=pts.length-1;i>=0;i--)ctx.lineTo(pts[i].x,mid+pts[i].env*amp);
+  ctx.closePath();ctx.fill();ctx.globalAlpha=1;
+  const trace=(key,col,lw)=>{ctx.strokeStyle=col;ctx.lineWidth=lw;ctx.beginPath();pts.forEach((p,i)=>{const v=key==="s"?p.f+p.r:p[key];i?ctx.lineTo(p.x,mid-v*amp):ctx.moveTo(p.x,mid-v*amp);});ctx.stroke();};
+  trace("f",c.fwd,1.2);trace("r",c.refl,1.2);trace("s",c.ink,2.2);
+  ctx.fillStyle=c.muted;ctx.font=MONO;ctx.textBaseline="top";
+  ctx.textAlign="left";ctx.fillText("← toward radio",L,6);
+  ctx.textAlign="right";ctx.fillText("load (antenna) →",w-Rp,6);
+  ctx.textAlign="center";ctx.fillText("2 λ of line",L+pw/2,6);
+}
+let raf=0;const reduce=matchMedia("(prefers-reduced-motion: reduce)").matches;const t0=performance.now();
+const animated=id=>id==="swr"||id==="waves";
+function drawAnim(t){if(active==="swr")drawSWR(t);else if(active==="waves")drawWaves(t);}
+function loop(now){if(!animated(active)||document.hidden){raf=0;return;}drawAnim((now-t0)/1000);raf=requestAnimationFrame(loop);}
+function startAnim(){if(reduce){drawAnim(0.3);return;}if(!raf)raf=requestAnimationFrame(loop);}
+document.addEventListener("visibilitychange",()=>{if(!document.hidden&&animated(active))startAnim();});
+
+/* ---------- module 3: antenna ---------- */
+const ANT={dipole:{R:73,k:468,Q:9,name:"dipole"},gpflat:{R:36,k:234,Q:9,name:"radiator"},gpdroop:{R:50,k:234,Q:9,name:"radiator"}};
+let antPrev={type:null,f:null};
+function antSWR(f,f0,a){const X=a.R*a.Q*(f/f0-f0/f);const ar=a.R-50,cr=a.R+50;const den=cr*cr+X*X;const gr=(ar*cr+X*X)/den,gi=(X*cr-ar*X)/den;const g=Math.hypot(gr,gi);return (1+g)/(1-g);}
+function updAnt(){
+  const type=$("#a-type").value,a=ANT[type],ft=Math.max(0.5,num("a-f",146));
+  const ideal=a.k/ft*12; // inches
+  const sl=$("#a-len");
+  const lo=ideal*0.8,hi=ideal*1.2;
+  if(antPrev.type!==type||antPrev.f!==ft){
+    sl.min=lo.toFixed(2);sl.max=hi.toFixed(2);sl.step="any";
+    sl.value=(ideal*1.04).toFixed(2);antPrev={type,f:ft};
+  }
+  const Lin=parseFloat(sl.value);const f0=a.k/(Lin/12);
+  set("a-len-o",`= ${(Lin*2.54).toFixed(1)} cm`);
+  set("a-f0",u(f0.toFixed(2),"MHz"));
+  const sw=antSWR(ft,f0,a);set("a-swr",swrFmt(sw));
+  let lo2=null,hi2=null;
+  for(let i=0;i<=4000;i++){const f=f0*(0.7+0.6*i/4000);if(antSWR(f,f0,a)<=2){if(lo2===null)lo2=f;hi2=f;}}
+  set("a-bw",lo2===null?"none":u((hi2-lo2).toFixed(2),"MHz"));
+  const off=(f0-ft)/ft;
+  set("a-stat",Math.abs(off)<0.005?'<span class="chip good">On target</span>':off<0?'<span class="chip warn">Resonance low</span>':'<span class="chip warn">Resonance high</span>');
+  const P=Math.max(0,num("e-p",50)),Ld=num("e-l",2),G=num("e-g",6);const net=G-Ld;const erp=P*Math.pow(10,net/10);
+  set("e-net",u((net>=0?"+":"")+net.toFixed(1),"dB"));set("e-erp",u(erp.toFixed(1),"W"));set("e-eirp",u((erp*Math.pow(10,0.215)).toFixed(1),"W"));
+  drawAnt(ft,f0,a);
+}
+function drawAnt(ft,f0,a){
+  const cv=$("#cv-ant");if(!visible(cv))return;
+  const {ctx,w,h}=prep(cv);const c=C();
+  const L=40,Rp=12,T=12,B=26,pw=w-L-Rp,ph=h-T-B;
+  const fl=ft*0.92,fh=ft*1.08;
+  const X=f=>L+(f-fl)/(fh-fl)*pw,Y=s=>T+(1-(Math.min(s,5)-1)/4)*ph;
+  ctx.font=MONO;ctx.lineWidth=1;
+  [1,1.5,2,3,5].forEach(s=>{ctx.strokeStyle=c.line;ctx.setLineDash(s===1?[]:[2,4]);seg(ctx,L,Y(s),w-Rp,Y(s));ctx.fillStyle=c.muted;ctx.textAlign="right";ctx.textBaseline="middle";ctx.fillText(s+":1",L-6,Y(s));});
+  ctx.setLineDash([]);
+  ctx.textAlign="center";ctx.textBaseline="top";
+  for(let k=0;k<=4;k++){const f=fl+(fh-fl)*k/4;ctx.fillStyle=c.muted;ctx.fillText(f.toFixed(1),X(f),h-B+6);}
+  ctx.strokeStyle=c.refl;ctx.lineWidth=1.5;ctx.setLineDash([6,4]);seg(ctx,L,Y(2),w-Rp,Y(2));
+  ctx.strokeStyle=c.ink;ctx.lineWidth=1.5;seg(ctx,X(ft),T,X(ft),h-B);ctx.setLineDash([]);
+  ctx.strokeStyle=c.fwd;ctx.lineWidth=2.2;ctx.beginPath();
+  for(let i=0;i<=pw;i++){const f=fl+(fh-fl)*i/pw;const y=Y(antSWR(f,f0,a));i?ctx.lineTo(L+i,y):ctx.moveTo(L+i,y);}
+  ctx.stroke();
+  if(f0>=fl&&f0<=fh){const s=antSWR(f0,f0,a);ctx.fillStyle=c.fwd;ctx.beginPath();ctx.arc(X(f0),Y(s),4,0,7);ctx.fill();}
+  ctx.fillStyle=c.ink;ctx.textAlign="left";ctx.textBaseline="top";
+  const lx=X(ft)+6>w-90?X(ft)-84:X(ft)+6;ctx.fillText("target "+ft.toFixed(1),lx,T+2);
+}
+
+/* ---------- module 4: repeater ---------- */
+const TONES=[67.0,69.3,71.9,74.4,77.0,79.7,82.5,85.4,88.5,91.5,94.8,97.4,100.0,103.5,107.2,110.9,114.8,118.8,123.0,127.3,131.8,136.5,141.3,146.2,151.4,156.7,159.8,162.2,165.5,167.9,171.3,173.8,177.3,179.9,183.5,186.2,189.9,192.8,196.6,199.5,203.5,206.5,210.7,218.1,225.7,229.1,233.6,241.8,250.3,254.1];
+const tsel=$("#r-tone");TONES.forEach(t=>{const o=document.createElement("option");o.value=t.toFixed(1);o.textContent=t.toFixed(1);if(t===100)o.selected=true;tsel.appendChild(o);});
+function autoOffset(f){
+  if(f>=145.1&&f<145.5)return["-",0.6];
+  if(f>=146.61&&f<147)return["-",0.6];
+  if(f>=147&&f<147.4)return["+",0.6];
+  if(f>=223.85&&f<225)return["-",1.6];
+  if(f>=442&&f<445)return["+",5];
+  if(f>=447&&f<450)return["-",5];
+  return["",0];
+}
+const bandOff=f=>f>=420?5:f>=222?1.6:0.6;
+let csvText="";
+function updRpt(){
+  const f=num("r-f",146.94);const dsel=$("#r-dup").value;
+  let dup,off,hint="";
+  if(dsel==="auto"){[dup,off]=autoOffset(f);hint=dup?"Auto offset from common US band plans. Your local coordinator has the final word.":"No standard repeater pair at this frequency. Treated as simplex. Check your local band plan.";}
+  else{dup=dsel;off=dup?bandOff(f):0;hint=dup?"Manual duplex with the standard offset for this band.":"Simplex: transmit and receive on the same frequency.";}
+  const tx=dup==="-"?f-off:dup==="+"?f+off:f;
+  const tm=$("#r-tm").value,tone=tsel.value,dcs=($("#r-dcs").value||"023").replace(/\D/g,"").padStart(3,"0").slice(0,3);
+  const acc=tm==="Tone"?`${tone} Hz TX`:tm==="TSQL"?`${tone} Hz TX+RX`:tm==="DTCS"?`DCS ${dcs}`:"None";
+  set("r-tx",u(tx.toFixed(3),"MHz"));set("r-rx",u(f.toFixed(3),"MHz"));
+  set("r-off",dup?u(dup+off.toFixed(3),"MHz"):"Simplex");set("r-acc",acc);set("r-hint",hint);
+  const T=(id,s)=>{document.getElementById(id).textContent=s;};
+  T("sv-listen",`You listen on ${f.toFixed(3)}`);T("sv-you",`TX ${tx.toFixed(3)}`);
+  T("sv-rpt",dup?`RX ${tx.toFixed(3)}`:"Not used");T("sv-oth",`RX ${f.toFixed(3)}`);
+  T("sv-tone",tm?`TX ${tx.toFixed(3)} + ${tm==="DTCS"?"DCS "+dcs:tone+" Hz"}`:`TX ${tx.toFixed(3)}, no tone`);
+  T("sv-out",dup?`TX ${f.toFixed(3)}`:"No repeater");
+  const name=($("#r-name").value||"CH1").replace(/,/g," ").toUpperCase();
+  const head="Location,Name,Frequency,Duplex,Offset,Tone,rToneFreq,cToneFreq,DtcsCode,DtcsPolarity,Mode,TStep,Skip,Comment";
+  const r=tm==="Tone"||tm==="TSQL"?tone:"88.5",cc=tm==="TSQL"?tone:"88.5";
+  const row=["1",name,f.toFixed(6),dup,off.toFixed(6),tm,r,cc,dcs,"NN","FM","5.00","","RF Bench Lab"].join(",");
+  csvText=head+"\n"+row;$("#r-csv").textContent=csvText;
+}
+$("#r-copy").addEventListener("click",()=>{
+  const b=$("#r-copy");const done=()=>{b.textContent="Copied";setTimeout(()=>b.textContent="Copy",1500);};
+  const fallback=()=>{const sel=getSelection();const rg=document.createRange();rg.selectNodeContents($("#r-csv"));sel.removeAllRanges();sel.addRange(rg);b.textContent="Selected. Copy manually";setTimeout(()=>b.textContent="Copy",2500);};
+  try{navigator.clipboard.writeText(csvText).then(done,fallback);}catch(e){fallback();}
+});
+
+/* ---------- module 5: link budget ---------- */
+const SNRREQ={7:-7.5,8:-10,9:-12.5,10:-15,11:-17.5,12:-20};
+const PRESETS={
+  ht:{"l-p":37,"l-gt":-2,"l-lt":0,"l-gr":-2,"l-lr":0,"l-f":146.52,"l-d":8,"l-x":0,"l-h1":1.5,"l-h2":1.5,"l-mode":"fm","l-sens":-121},
+  mobile:{"l-p":47,"l-gt":2,"l-lt":1,"l-gr":6,"l-lr":3,"l-f":146.34,"l-d":30,"l-x":10,"l-h1":1.5,"l-h2":60,"l-mode":"fm","l-sens":-116},
+  mesh:{"l-p":20,"l-gt":2,"l-lt":0,"l-gr":2,"l-lr":0,"l-f":915,"l-d":5,"l-x":0,"l-h1":2,"l-h2":10,"l-mode":"lora","l-sf":"11","l-bw":"250"}
+};
+$$("[data-preset]").forEach(b=>b.addEventListener("click",()=>{const p=PRESETS[b.dataset.preset];Object.keys(p).forEach(k=>{document.getElementById(k).value=p[k];});updLink();}));
+let LB=null;
+function updLink(){
+  const P=num("l-p",37),Gt=num("l-gt",0),Lt=num("l-lt",0),Gr=num("l-gr",0),Lr=num("l-lr",0),f=Math.max(1,num("l-f",146)),d=Math.max(0.01,num("l-d",8)),Xl=num("l-x",0),h1=Math.max(0,num("l-h1",1.5)),h2=Math.max(0,num("l-h2",1.5));
+  const mode=$("#l-mode").value;const lora=mode==="lora";
+  $("#l-sens-wrap").hidden=lora;$("#l-sf-wrap").hidden=!lora;$("#l-bw-wrap").hidden=!lora;$("#l-rate-wrap").hidden=!lora;
+  const pw=Math.pow(10,P/10)/1000;
+  set("l-p-o",pw>=1?pw.toFixed(1)+" W":(pw*1000).toFixed(0)+" mW");
+  set("l-d-o",d.toFixed(1)+" km");set("l-x-o",Xl+" dB");
+  let sens;
+  if(lora){const sf=parseInt($("#l-sf").value,10),bw=parseInt($("#l-bw").value,10)*1000;sens=-174+10*log10(bw)+6+SNRREQ[sf];
+    const rate=sf*(bw/Math.pow(2,sf))*0.8;set("l-rate",rate>=1000?u((rate/1000).toFixed(2),"kbps"):u(rate.toFixed(0),"bps"));}
+  else sens=num("l-sens",-121);
+  const fspl=20*log10(d)+20*log10(f)+32.44;const eirp=P+Gt-Lt;
+  const rx=eirp-fspl-Xl+Gr-Lr;const m=rx-sens;
+  const hz=4.12*(Math.sqrt(h1)+Math.sqrt(h2));const fr=0.6*8.657*Math.sqrt(d/(f/1000));
+  set("l-eirp",u(eirp.toFixed(1),"dBm"));set("l-fspl",u(fspl.toFixed(1),"dB"));set("l-rx",u(rx.toFixed(1),"dBm"));
+  set("l-sens-o",u(sens.toFixed(1),"dBm"));
+  const chip=m>=10?'<span class="chip good">solid</span>':m>=0?'<span class="chip warn">marginal</span>':'<span class="chip bad">no link</span>';
+  set("l-m",`${(m>=0?"+":"")+m.toFixed(1)}<small> dB</small> ${chip}`);
+  set("l-hz",u(hz.toFixed(1),"km"));set("l-fr",u(fr.toFixed(1),"m"));
+  set("l-warn",d>hz?`Beyond the radio horizon (${hz.toFixed(1)} km). Earth curvature blocks the path, so free-space math no longer applies. Raise an antenna.`:Xl===0?"Free space only. Add terrain or clutter loss to model a real path.":"");
+  LB={stages:[["TX",P],["Ant",Gt],["Coax",-Lt],["Path",-fspl],["Clutter",-Xl],["Ant",Gr],["Coax",-Lr]],sens,rx};
+  drawLink();
+}
+function drawLink(){
+  const cv=$("#cv-link");if(!visible(cv)||!LB)return;
+  const {ctx,w,h}=prep(cv);const c=C();
+  const L=46,Rp=10,T=14,B=26,pw=w-L-Rp,ph=h-T-B;
+  const lv=[];let acc=0;LB.stages.forEach((s,i)=>{acc=i===0?s[1]:acc+s[1];lv.push(acc);});
+  const hi=Math.max(...lv,LB.stages[0][1])+5,lo=Math.min(...lv,LB.sens)-8;
+  const top=Math.ceil(hi/20)*20,bottom=Math.floor(lo/20)*20;
+  const Y=v=>T+(top-v)/(top-bottom)*ph;const n=lv.length;const step=pw/n;
+  ctx.font=MONO;ctx.lineWidth=1;
+  for(let v=bottom;v<=top;v+=20){ctx.strokeStyle=c.line;ctx.setLineDash([2,4]);seg(ctx,L,Y(v),w-Rp,Y(v));ctx.fillStyle=c.muted;ctx.textAlign="right";ctx.textBaseline="middle";ctx.fillText(String(v),L-6,Y(v));}
+  ctx.setLineDash([6,4]);ctx.strokeStyle=c.bad;ctx.lineWidth=1.5;seg(ctx,L,Y(LB.sens),w-Rp,Y(LB.sens));ctx.setLineDash([]);
+  ctx.fillStyle=c.bad;ctx.textAlign="right";ctx.textBaseline="bottom";ctx.fillText("sensitivity",w-Rp-2,Y(LB.sens)-3);
+  ctx.strokeStyle=LB.rx>=LB.sens?c.fwd:c.bad;ctx.lineWidth=2.4;ctx.beginPath();
+  lv.forEach((v,i)=>{const x0=L+i*step,x1=x0+step;if(i===0)ctx.moveTo(x0,Y(v));else ctx.lineTo(x0,Y(v));ctx.lineTo(x1,Y(v));});ctx.stroke();
+  ctx.fillStyle=c.muted;ctx.textAlign="center";ctx.textBaseline="top";
+  LB.stages.forEach((s,i)=>ctx.fillText(s[0],L+i*step+step/2,h-B+6));
+  ctx.fillStyle=c.ink;ctx.textAlign="right";ctx.textBaseline="bottom";
+  ctx.fillText(LB.rx.toFixed(0)+" dBm",w-Rp-2,Y(LB.rx)-4);
+  ctx.fillStyle=c.muted;ctx.textAlign="left";ctx.fillText("dBm",4,T+10);
+}
+
+/* ---------- module 6: LMR filter ---------- */
+function updLmr(){
+  const need={off:$("#c-off").checked,enc:$("#c-enc").checked,two:$("#c-two").checked};
+  const anyNeed=need.off||need.enc||need.two;
+  $$("#lmr-rows tr").forEach(tr=>{
+    const ok=(!need.off||tr.dataset.off==="1")&&(!need.enc||tr.dataset.enc==="1")&&(!need.two||tr.dataset.two==="1");
+    tr.classList.toggle("match",anyNeed&&ok);tr.classList.toggle("miss",anyNeed&&!ok);
+  });
+}
+
+/* ---------- module 7: signals ---------- */
+const FACT=[1];for(let i=1;i<=170;i++)FACT[i]=FACT[i-1]*i;
+function besselJ(n,x){n=Math.abs(n);let term=Math.pow(x/2,n)/FACT[n],s=0;for(let k=0;k<200;k++){s+=term;term*=-(x*x/4)/((k+1)*(k+1+n));if(k>x&&Math.abs(term)<1e-15)break;}return s;}
+let SG=null;
+function updSig(){
+  const mode=$("#g-mode").value,fm=num("g-fm",1),dev=num("g-dev",2.5),m=num("g-m",70)/100;
+  $("#g-dev-wrap").hidden=mode!=="fm";$("#g-m-wrap").hidden=mode!=="am";
+  set("g-fm-o",fm.toFixed(2)+" kHz");set("g-dev-o","±"+dev.toFixed(2)+" kHz");set("g-m-o",Math.round(m*100)+"%");
+  if(mode==="fm"){
+    const b=dev/fm;const j0=Math.abs(besselJ(0,b));
+    set("g-k1","Index β");set("g-v1",b.toFixed(3));set("g-bw",u((2*(dev+fm)).toFixed(1),"kHz"));
+    set("g-car",j0<0.02?'<span class="chip info">carrier null</span>':u((20*log10(j0)).toFixed(1),"dB"));
+    set("g-sb",u(((1-j0*j0)*100).toFixed(0),"%"));
+  }else{
+    set("g-k1","Depth m");set("g-v1",Math.round(m*100)+"%");set("g-bw",u((2*fm).toFixed(1),"kHz"));
+    set("g-car",u("0.0","dB"));set("g-sb",u((m*m/(2+m*m)*100).toFixed(1),"%"));
+  }
+  SG={mode,fm,dev,m};drawSig();
+}
+function drawSig(){
+  if(!SG)return;const c=C();
+  const cv=$("#cv-time");
+  if(visible(cv)){
+    const {ctx,w,h}=prep(cv);const mid=h/2,amp=h*0.36;const fcv=36,fmv=2;
+    ctx.strokeStyle=c.line;ctx.lineWidth=1;seg(ctx,0,mid,w,mid);
+    ctx.strokeStyle=c.refl;ctx.lineWidth=1.2;ctx.beginPath();
+    for(let i=0;i<=w;i++){const x=i/w;const y=mid-Math.cos(2*Math.PI*fmv*x)*amp*1.05;i?ctx.lineTo(i,y):ctx.moveTo(i,y);}ctx.stroke();
+    ctx.strokeStyle=c.fwd;ctx.lineWidth=1.3;ctx.beginPath();
+    const N=Math.ceil(w*4);
+    for(let i=0;i<=N;i++){const x=i/N;let y;
+      if(SG.mode==="fm"){const fd=fcv*0.45*(SG.dev/7.5);const ph=2*Math.PI*fcv*x+(fd/fmv)*Math.sin(2*Math.PI*fmv*x);y=Math.sin(ph);}
+      else{y=(1+SG.m*Math.cos(2*Math.PI*fmv*x))/2*Math.sin(2*Math.PI*fcv*x);}
+      const px=x*w,py=mid-y*amp*(SG.mode==="am"?1.9:0.9);i?ctx.lineTo(px,py):ctx.moveTo(px,py);}
+    ctx.stroke();
+    ctx.font=MONO;ctx.fillStyle=c.muted;ctx.textAlign="left";ctx.textBaseline="top";
+    ctx.fillText("audio tone",8,6);ctx.fillStyle=c.fwd;ctx.fillText("RF",86,6);
+  }
+  const cs=$("#cv-spec");
+  if(visible(cs)){
+    const {ctx,w,h}=prep(cs);const L=36,Rp=12,T=14,B=26,pw=w-L-Rp,ph=h-T-B;const span=15;
+    const X=f=>L+(f+span)/(2*span)*pw,Y=a=>T+(1-a)*ph;
+    ctx.font=MONO;ctx.lineWidth=1;
+    [0,0.25,0.5,0.75,1].forEach(a=>{ctx.strokeStyle=c.line;ctx.setLineDash(a===0?[]:[2,4]);seg(ctx,L,Y(a),w-Rp,Y(a));ctx.fillStyle=c.muted;ctx.textAlign="right";ctx.textBaseline="middle";ctx.fillText(a.toFixed(2),L-5,Y(a));});
+    ctx.setLineDash([]);ctx.textAlign="center";ctx.textBaseline="top";
+    [-15,-10,-5,0,5,10,15].forEach(f=>{ctx.fillStyle=c.muted;ctx.fillText((f>0?"+":"")+f,X(f),h-B+6);});
+    const bw=SG.mode==="fm"?2*(SG.dev+SG.fm):2*SG.fm;const hb=Math.min(span,bw/2);
+    ctx.globalAlpha=0.12;ctx.fillStyle=c.fwd;ctx.fillRect(X(-hb),T,X(hb)-X(-hb),ph);ctx.globalAlpha=1;
+    ctx.fillStyle=c.fwd;ctx.textBaseline="top";ctx.textAlign="center";ctx.fillText(SG.mode==="fm"?"Carson BW":"AM BW",X(0),T+2);
+    const lines=[];
+    if(SG.mode==="fm"){const b=SG.dev/SG.fm;const nmax=Math.floor(span/SG.fm);for(let n=-nmax;n<=nmax;n++){const a=Math.abs(besselJ(n,b));if(a>0.004)lines.push([n*SG.fm,a,n===0]);}}
+    else{lines.push([0,1,true]);if(SG.m>0){lines.push([-SG.fm,SG.m/2,false]);lines.push([SG.fm,SG.m/2,false]);}}
+    lines.forEach(([f,a,isC])=>{ctx.strokeStyle=isC?c.ink:c.fwd;ctx.lineWidth=isC?2.4:2;seg(ctx,X(f),Y(0),X(f),Y(Math.min(1,a)));ctx.fillStyle=isC?c.ink:c.fwd;ctx.beginPath();ctx.arc(X(f),Y(Math.min(1,a)),2.6,0,7);ctx.fill();});
+    ctx.fillStyle=c.muted;ctx.textAlign="right";ctx.textBaseline="top";ctx.fillText("kHz from carrier",w-Rp,T+2);
+  }
+}
+
+/* ---------- wiring ---------- */
+const UPD={math:updMath,waves:updWaves,swr:updSWR,antenna:updAnt,repeater:updRpt,link:updLink,lmr:updLmr,signals:updSig};
+MODS.forEach(m=>{const sec=document.getElementById("m-"+m.id);$$("input,select",sec).forEach(el=>{el.addEventListener("input",UPD[m.id]);el.addEventListener("change",UPD[m.id]);});});
+function redraw(){
+  if(active==="swr")drawSWR(reduce?0.3:(performance.now()-t0)/1000);
+  if(active==="waves")drawWaves(reduce?0.3:(performance.now()-t0)/1000);
+  if(active==="antenna")updAnt();
+  if(active==="link")drawLink();
+  if(active==="signals")drawSig();
+}
+if("ResizeObserver" in window){const ro=new ResizeObserver(()=>redraw());$$("canvas.scope").forEach(cv=>ro.observe(cv));}
+matchMedia("(prefers-color-scheme: dark)").addEventListener("change",redraw);
+new MutationObserver(redraw).observe(document.documentElement,{attributes:true,attributeFilter:["data-theme"]});
+
+
+/* ---------- number boxes beside sliders ---------- */
+const BOX={
+ "s-r":{u:"Ω"},"s-x":{u:"Ω"},"s-len":{u:"ft"},"a-len":{u:"in",d:2},
+ "w-f":{u:"MHz",to:v=>Math.pow(10,v),from:x=>Math.log10(x),min:30,max:1000,d:2},
+ "w-p":{u:"dBm"},"w-ba":{u:"%"},"w-bph":{u:"°"},"w-bdf":{u:"%"},
+ "l-d":{u:"km"},"l-x":{u:"dB"},"g-fm":{u:"kHz"},"g-dev":{u:"kHz"},"g-m":{u:"%"}
+};
+const PAIRS=[];
+Object.entries(BOX).forEach(([id,cfg])=>{
+  const sl=document.getElementById(id);if(!sl)return;
+  const st=sl.getAttribute("step");
+  const dec=cfg.d!=null?cfg.d:(st&&st!=="any"&&st.includes(".")?st.split(".")[1].length:0);
+  const to=cfg.to||(v=>v),from=cfg.from||(x=>x);
+  const wrap=document.createElement("div");wrap.className="rangebox";
+  sl.parentNode.insertBefore(wrap,sl);wrap.appendChild(sl);
+  const nb=document.createElement("input");nb.type="number";nb.className="nb";nb.id=id+"-n";nb.step="any";nb.inputMode="decimal";
+  const lab=document.querySelector(`label[for="${id}"]`);nb.setAttribute("aria-label",(lab?lab.textContent.trim():id)+" value");
+  const un=document.createElement("span");un.className="unit";un.textContent=cfg.u;
+  wrap.appendChild(nb);wrap.appendChild(un);
+  const lim=()=>({lo:cfg.min!=null?cfg.min:to(parseFloat(sl.min)),hi:cfg.max!=null?cfg.max:to(parseFloat(sl.max))});
+  const fmt=v=>String(+(+v).toFixed(dec));
+  const pull=()=>{const {lo,hi}=lim();nb.min=fmt(lo);nb.max=fmt(hi);if(document.activeElement!==nb)nb.value=fmt(to(parseFloat(sl.value)));};
+  const push=(final)=>{
+    const x=parseFloat(nb.value);const {lo,hi}=lim();
+    if(!Number.isFinite(x)){if(final)pull();return;}
+    if(!final&&(x<lo||x>hi))return;
+    const c=Math.min(hi,Math.max(lo,x));
+    sl.value=String(from(c));sl.dispatchEvent(new Event("input",{bubbles:true}));
+    if(final)nb.value=fmt(to(parseFloat(sl.value)));
+  };
+  nb.addEventListener("input",()=>push(false));
+  nb.addEventListener("change",()=>push(true));
+  nb.addEventListener("keydown",e=>{if(e.key==="Enter"){push(true);nb.select();}});
+  PAIRS.push(pull);
+});
+const syncBoxes=()=>PAIRS.forEach(f=>f());
+["input","change","click"].forEach(ev=>document.addEventListener(ev,syncBoxes));
+attachFieldTips();
+$$(".brief p, .formulas div, .legend span, .callout li, .bench-body > p.note, .group > p.note, .pane > .label, td, th, .checks label, .lede, .group > ul.plain li").forEach(tagTerms);
+Object.values(UPD).forEach(fn=>fn());
+refreshAll();
+const h=(location.hash||"").slice(1);
+const start=MODS.some(m=>m.id===h)?h:(MODS.some(m=>m.id===store.tab)?store.tab:"math");
+show(start,false);
+syncBoxes();
+if(document.fonts&&document.fonts.ready)document.fonts.ready.then(redraw);
+})();
+</script>
+
+</body>
+</html>
