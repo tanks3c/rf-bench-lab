@@ -1,0 +1,34 @@
+/* Radio Hub base: tokens, page ground, shared top bar and footer. Used by every hub page. */
+:root{
+  --h-bg:#0b1420; --h-bar:#08111b; --h-panel:#132435; --h-panel2:#172b3e; --h-sunk:#091a28;
+  --h-fg:#edf6fd; --h-muted:#afc2d1; --h-line:#365066; --h-accent:#84d5ff; --h-accent-ink:#052439;
+  --h-mint:#a9e9cd; --h-warn:#ffd29a; --h-amber:#f0aa46; --h-red:#ffb2b2; --h-violet:#c9b6ff;
+  --h-font:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  --h-mono:ui-monospace,SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+[hidden]{display:none !important}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--h-bg);color:var(--h-fg);font:15px/1.55 var(--h-font)}
+a{color:var(--h-accent)}
+/*BAR*/
+.hubbar{background:var(--h-bar);border-bottom:1px solid var(--h-line);font-family:var(--h-font)}
+.hubbar-in{max-width:1100px;margin:0 auto;padding-block:10px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:flex;flex-wrap:wrap;align-items:center;gap:8px 20px}
+.hub-brand{display:inline-flex;align-items:center;gap:8px;color:var(--h-fg);text-decoration:none;font-weight:800;font-size:16px;letter-spacing:-.01em;white-space:nowrap}
+.hub-brand svg{width:22px;height:22px;color:var(--h-accent);flex:0 0 auto}
+.hub-brand small{font-weight:600;color:var(--h-muted);font-size:11px;letter-spacing:.12em;text-transform:uppercase}
+.hubnav{display:flex;gap:4px;overflow-x:auto;flex:1 1 auto;min-width:0;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+.hubnav::-webkit-scrollbar{display:none}
+.hubnav a{flex:0 0 auto;color:var(--h-muted);text-decoration:none;font:650 13px/1.2 var(--h-font);padding:8px 11px;border-radius:9px;white-space:nowrap}
+.hubnav a:hover{color:var(--h-fg);background:var(--h-panel)}
+.hubnav a[aria-current="page"]{color:var(--h-accent-ink);background:var(--h-accent)}
+.hubnav a .ext{opacity:.7;margin-left:3px}
+.hubnav a:focus-visible,.hub-brand:focus-visible,.hubfoot a:focus-visible{outline:2px solid var(--h-accent);outline-offset:2px}
+@media (max-width:760px){.hubnav{flex-basis:100%;margin-inline:-4px}}
+.hubfoot{border-top:1px solid var(--h-line);color:var(--h-muted);font:12px/1.6 var(--h-font);margin-top:28px;background:var(--h-bar)}
+.hubfoot-in{max-width:1100px;margin:0 auto;padding-block:18px 28px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:flex;flex-wrap:wrap;gap:6px 22px;justify-content:space-between}
+.hubfoot p{margin:0;max-width:72ch}
+.hubfoot a{color:var(--h-accent)}
+@media print{.hubbar,.hubfoot{display:none !important}}
+/*ENDBAR*/

@@ -1,0 +1,23 @@
+{
+  "name": "Radio Hub",
+  "short_name": "Radio Hub",
+  "description": "Offline ham, LMR, and Meshtastic field tools.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#0b1420",
+  "theme_color": "#08111b",
+  "icons": [
+    {
+      "src": "icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

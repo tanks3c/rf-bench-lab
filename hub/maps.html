@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#08111b">
+<meta name="description" content="Parrish-area radio towers and Manatee County ham repeater areas, with GPX and GeoJSON downloads.">
+<title>Area Maps · Radio Hub</title>
+<link rel="stylesheet" href="assets/hub-base.css">
+<link rel="stylesheet" href="assets/hub.css">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon-192.png" type="image/png" sizes="192x192">
+<link rel="apple-touch-icon" href="icons/icon-180.png">
+<link rel="stylesheet" href="vendor/leaflet/leaflet.css">
+<style>
+#map{height:min(62vh,520px);min-height:320px;border:1px solid var(--h-line);border-radius:14px;background:#0e2131;z-index:0}
+.maptools{display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center;margin:12px 0 4px}
+.maptools label{display:inline-flex;gap:7px;align-items:center;font-size:13px;border:1px solid var(--h-line);border-radius:30px;padding:6px 11px;cursor:pointer;background:var(--h-sunk)}
+.maptools input{accent-color:var(--h-accent);width:16px;height:16px;margin:0}
+.tilenote{font-size:12.5px;color:var(--h-warn);margin:6px 0 0}
+.search{font:inherit;font-size:15px;color:var(--h-fg);background:var(--h-sunk);border:1px solid var(--h-line);border-radius:9px;padding:9px 11px;width:100%;max-width:420px;margin:4px 0 10px}
+.rowbtn{font:700 12px var(--h-font);color:var(--h-accent);background:none;border:1px solid var(--h-line);border-radius:7px;padding:4px 8px;cursor:pointer;white-space:nowrap}
+.rowbtn:hover{border-color:var(--h-accent)}
+.leaflet-popup-content{font:13px/1.45 var(--h-font);color:#132435;max-height:240px;overflow:auto}
+.leaflet-popup-content b{color:#0b1420}
+.leaflet-popup-content .warn{color:#8a4b00;font-weight:800}
+.leaflet-container a{color:#0b5f8f}
+.sections{display:grid;gap:14px;margin-top:14px}
+</style>
+</head>
+<body>
+<div class="hubbar"><div class="hubbar-in"><a class="hub-brand" href="index.html"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 10.5 8.6 21.5M12 10.5l3.4 11M9.6 18h4.8"/><circle cx="12" cy="8.6" r="1.7" fill="currentColor" stroke="none"/><path d="M8.6 5.4a4.8 4.8 0 0 0 0 6.4M15.4 5.4a4.8 4.8 0 0 1 0 6.4M5.8 2.8a8.6 8.6 0 0 0 0 11.6M18.2 2.8a8.6 8.6 0 0 1 0 11.6"/></svg><span>Radio Hub</span></a><nav class="hubnav" aria-label="Radio Hub sections"><a href="index.html">Home</a><a href="../index.html">RF Bench Lab</a><a href="lmr-toolkit.html">LMR Toolkit</a><a href="meshtastic.html">Meshtastic</a><a href="maps.html" aria-current="page">Area maps</a><a href="inventory.html">County inventory</a></nav></div></div>
+<main class="wrap">
+  <div class="pagehead">
+    <div>
+      <p class="eyebrow">Parrish and Manatee County, FL</p>
+      <h1>Area Maps</h1>
+      <p class="lede">Public tower records around Parrish and the county's listed ham repeaters. Tap a pin for the source. Lists and downloads work offline. The background map needs internet.</p>
+    </div>
+    <div class="actions">
+      <a class="btn small" href="data/Manatee_Amateur_Repeaters_Area_Only_OsmAnd.gpx" download>Repeaters GPX</a>
+      <a class="btn small" href="data/Parrish_Radio_Towers_OSM_uMap.geojson" download>Towers GeoJSON</a>
+    </div>
+  </div>
+
+  <section class="card">
+    <div id="map" role="region" aria-label="Map of towers and repeater areas"></div>
+    <div class="maptools" id="layers" aria-label="Map layers"></div>
+    <p class="tilenote" id="tilenote" hidden>Background map tiles could not load. You are probably offline. The pins and lists below still work.</p>
+    <p class="fine">Orange dashed rings are ham repeater <b>areas</b> placed at town centers. They are not transmitter sites. Tower pins are public listings, and many are historical. A listing does not prove a site is active or name its services.</p>
+  </section>
+
+  <div class="sections">
+    <section class="card">
+      <h2>Ham repeaters, Manatee County</h2>
+      <p class="fine">From SRQARES, the Manatee ARC, SPARC, and older directories. Sources disagree in places, so confirm on the air or in RepeaterBook before relying on a listing. Offsets are written as your transmit shift.</p>
+      <div class="tablewrap"><table>
+        <thead><tr><th>Frequency</th><th>Offset</th><th>Tone</th><th>Callsign</th><th>Mode</th><th>Area</th><th>Status</th><th></th></tr></thead>
+        <tbody id="rpt-rows"></tbody>
+      </table></div>
+    </section>
+
+    <section class="card">
+      <h2>Towers near Parrish</h2>
+      <input class="search" id="tq" type="search" placeholder="Search name, category, road, station" aria-label="Search towers">
+      <p class="fine" id="tcount"></p>
+      <div class="tablewrap"><table>
+        <thead><tr><th>Name</th><th>Category</th><th>Record</th><th>Notes</th><th>Source</th><th></th></tr></thead>
+        <tbody id="tower-rows"></tbody>
+      </table></div>
+    </section>
+  </div>
+</main>
+<div class="hubfoot" role="contentinfo"><div class="hubfoot-in"><p>Radio Hub · static pages, offline after first visit, no tracking. Public tower and repeater data only; verify before relying on any listing.</p><p><a href="index.html#privacy">What this site leaves out</a> · <a href="https://github.com/tanks3c/rf-bench-lab/tree/main/hub" target="_blank" rel="noopener">Source</a></p></div></div>
+<script src="vendor/leaflet/leaflet.js"></script>
+<script>
+'use strict';
+const TOWERS=[{"name": "7th Ave NE · 1510 tower", "category": "Communications / antenna", "description": "Historic Verizon / Crown Castle antenna record near 15th St NE.", "record_status": "Historical listing", "source": "https://www.city-data.com/towers/cell-Ruskin-Florida.html", "lat": 27.724444, "lon": -82.412861}, {"name": "Big Bend Rd tower · 7599", "category": "Communications / antenna", "description": "Historical American Tower facility in Apollo Beach, approximately 123 m.", "record_status": "Historical listing", "source": "https://www.city-data.com/towers/cell-Ruskin-Florida.html", "lat": 27.7755, "lon": -82.368861}, {"name": "East Parrish wireless tower", "category": "Communications / antenna", "description": "Historic Sprintcom record near SR 62; may represent a separate site from 19725 SR 62.", "record_status": "Historical listing", "source": "https://www.city-data.com/towers/cell-Parrish-Florida.html", "lat": 27.595139, "lon": -82.338083}, {"name": "Erie Road tower · 11376 Erie Rd", "category": "Communications / antenna", "description": "Historical records mention American Towers and other past registrants. Reported height about 75 m.", "record_status": "Historical listing", "source": "https://www.city-data.com/towers/cell-Parrish-Florida.html", "lat": 27.581917, "lon": -82.444667}, {"name": "Erie Road · 8905", "category": "Communications / antenna", "description": "Historical Anthemnet record. Height about 59 m.", "record_status": "Historical listing", "source": "https://www.city-data.com/towers/cell-Parrish-Florida.html", "lat": 27.571556, "lon": -82.474222}, {"name": "I-75 / CR 674 Florida state tower", "category": "Communications / antenna", "description": "Historical State of Florida registration at I-75 / CR 674 interchange; specific current radio services not verified.", "record_status": "Historical listing", "source": "https://www.city-data.com/towers/cell-Ruskin-Florida.html", "lat": 27.714167, "lon": -82.382222}, {"name": "Leisey Shell Pit Rd tower", "category": "Communications / antenna", "description": "Historical Motorola registration 438 ft west of Leisey Shell Pit Road, approximately 122 m.", "record_status": "Historical listing", "source": "https://www.city-data.com/towers/cell-Ruskin-Florida.html", "lat": 27.691667, "lon": -82.504722}, {"name": "Little Country Rd licensed tower", "category": "Licensed radio facility", "description": "2100 Little Country Road; FCC ULS record WQAH347 has frequency 217.875 MHz, listed tower 13.7 m.", "record_status": "FCC ULS record", "source": "https://fcc.report/ULS/2625041", "lat": 27.53266667, "lon": -82.50191667}, {"name": "Manatee County communications tower", "category": "Communications / antenna", "description": "Historical Clearshot Communications registration (no confirmed radio system).", "record_status": "Historical listing", "source": "https://www.city-data.com/towers/cell-Parrish-Florida.html", "lat": 27.482639, "lon": -82.369972}, {"name": "River Wilderness Blvd licensed tower", "category": "Licensed radio facility", "description": "2901 River Wilderness Blvd; FCC ULS record WQAH347 has frequency 217.875 MHz, listed tower 13.7 m.", "record_status": "FCC ULS record", "source": "https://fcc.report/ULS/2625041", "lat": 27.54630556, "lon": -82.43680556}, {"name": "River Wilderness Blvd W licensed tower", "category": "Licensed radio facility", "description": "2510 River Wilderness Blvd W; FCC ULS record WQAH347 has frequency 217.875 MHz, listed tower 13.7 m.", "record_status": "FCC ULS record", "source": "https://fcc.report/ULS/2625041", "lat": 27.53558333, "lon": -82.43055556}, {"name": "Ruskin tower · 1105 NE 3rd St", "category": "Communications / antenna", "description": "Historical American Towers antenna structure, height estimates vary across records.", "record_status": "Historical listing", "source": "https://www.city-data.com/towers/cell-Ruskin-Florida.html", "lat": 27.731194, "lon": -82.426611}, {"name": "Ruskin tower · 1507 SE 21st Ave", "category": "Communications / antenna", "description": "Historical American Tower facility, roughly 122 m. Duplicate listings consolidated.", "record_status": "Historical listing", "source": "https://www.city-data.com/towers/cell-Ruskin-Florida.html", "lat": 27.693917, "lon": -82.413694}, {"name": "Ruskin tower · 1800 27th St SE", "category": "Communications / antenna", "description": "Historical American Towers facility, roughly 122 m.", "record_status": "Historical listing", "source": "https://www.city-data.com/towers/cell-Ruskin-Florida.html", "lat": 27.697722, "lon": -82.397028}, {"name": "Spencer Road · 5200", "category": "Communications / antenna", "description": "Historical 1 Source Towers registration; height about 60 m.", "record_status": "Historical listing", "source": "https://www.city-data.com/towers/cell-Parrish-Florida.html", "lat": 27.565556, "lon": -82.408056}, {"name": "Spencer-Parrish Road antenna", "category": "Communications / antenna", "description": "Historical Anthemnet record; height about 59 m.", "record_status": "Historical listing", "source": "https://www.city-data.com/towers/cell-Parrish-Florida.html", "lat": 27.585528, "lon": -82.409722}, {"name": "SR 62 tower · 19725 SR 62", "category": "Communications / antenna", "description": "Listed for historic Sprint / STC wireless infrastructure. Reported height about 76 m.", "record_status": "Historical listing", "source": "https://www.city-data.com/towers/cell-Parrish-Florida.html", "lat": 27.59425, "lon": -82.336556}, {"name": "SR 62 tower · west Parrish", "category": "Communications / antenna", "description": "Historical American Tower registration. Reported height about 91 m.", "record_status": "Historical listing", "source": "https://www.city-data.com/towers/cell-Parrish-Florida.html", "lat": 27.585556, "lon": -82.397222}, {"name": "SR 64 / CR 675 tower", "category": "Communications / antenna", "description": "Historical Acme Towers registration, near the SR 64 and CR 675 intersection.", "record_status": "Historical listing", "source": "https://www.city-data.com/towers/cell-Parrish-Florida.html", "lat": 27.477417, "lon": -82.289806}, {"name": "Tamiami Tr S tower · 1519", "category": "Communications / antenna", "description": "Historic AT&T / Landlink site, approximately 71 m.", "record_status": "Historical listing", "source": "https://www.city-data.com/towers/cell-Ruskin-Florida.html", "lat": 27.705833, "lon": -82.436944}, {"name": "Tamiami Trail S tower · 1410", "category": "Communications / antenna", "description": "Historic Main Site LLC listing near 1519 Tamiami South. Potentially co-located; mapped separately based on differing listed positions.", "record_status": "Historical listing", "source": "https://www.city-data.com/towers/cell-Ruskin-Florida.html", "lat": 27.706611, "lon": -82.437028}, {"name": "US 301 N tower · 12415 US 301", "category": "Communications / antenna", "description": "Historical Bellsouth / Cingular site. Reported height about 77.7 m.", "record_status": "Historical listing", "source": "https://www.city-data.com/towers/cell-Parrish-Florida.html", "lat": 27.613889, "lon": -82.426944}, {"name": "US 41 S tower · 12979", "category": "Communications / antenna", "description": "Historical T-Mobile / Crown Castle tower listing.", "record_status": "Historical listing", "source": "https://www.city-data.com/towers/cell-Ruskin-Florida.html", "lat": 27.80025, "lon": -82.389639}, {"name": "US 41 South tower · 4422", "category": "Communications / antenna", "description": "Historic T-Mobile / Crown Castle record, approximately 50 m.", "record_status": "Historical listing", "source": "https://www.city-data.com/towers/cell-Ruskin-Florida.html", "lat": 27.673611, "lon": -82.480278}, {"name": "Valroy Rd tower · 3201", "category": "Communications / antenna", "description": "Historical AT&T / Crown Castle records. Height about 58-61 m.", "record_status": "Historical listing", "source": "https://www.city-data.com/towers/cell-Ruskin-Florida.html", "lat": 27.660278, "lon": -82.436806}, {"name": "Valroy Rd tower · 4646", "category": "Communications / antenna", "description": "Historical AT&T cellular tower registration. Height about 63 m.", "record_status": "Historical listing", "source": "https://www.city-data.com/towers/cell-Ruskin-Florida.html", "lat": 27.653361, "lon": -82.495444}, {"name": "WAYP-FM historical tower", "category": "AM / FM broadcast", "description": "Historic WAYP-FM Holmes Beach tower listing.", "record_status": "USGS/GNIS landmark", "source": "https://www.anyplaceamerica.com/directory/fl/manatee-county-12081/towers/", "lat": 27.4639291, "lon": -82.5920421}, {"name": "WDUV-FM / WBRD-AM historical site", "category": "AM / FM broadcast", "description": "The USGS/GNIS listing has WDUV-FM and WBRD-AM at this same point; deduplicated into one site.", "record_status": "USGS/GNIS landmark", "source": "https://www.anyplaceamerica.com/directory/fl/manatee-county-12081/towers/", "lat": 27.5453147, "lon": -82.5742638}, {"name": "WDUV-FM historical tower · N Parrish", "category": "AM / FM broadcast", "description": "Historic USGS/OSM tower named WDUV-FM (Bradenton); call sign/site use may have changed.", "record_status": "OSM/GNIS landmark", "source": "https://mapcarta.com/20699078", "lat": 27.5958687, "lon": -82.4514836}, {"name": "WHVE-FM historical tower", "category": "AM / FM broadcast", "description": "Historic WHVE-FM Sarasota tower listing. Not proof of current transmitter operation.", "record_status": "USGS/GNIS landmark", "source": "https://www.anyplaceamerica.com/directory/fl/manatee-county-12081/towers/", "lat": 27.408654, "lon": -82.2498129}, {"name": "WKLV-AM historical tower", "category": "AM / FM broadcast", "description": "Historic WKLV-AM Bradenton site listing.", "record_status": "USGS/GNIS landmark", "source": "https://www.anyplaceamerica.com/directory/fl/manatee-county-12081/towers/", "lat": 27.5003167, "lon": -82.5734305}, {"name": "WTRL historical radio tower", "category": "AM / FM broadcast", "description": "Historical USGS/GNIS tower name WTRL Radio Tower.", "record_status": "USGS/GNIS landmark", "source": "https://www.anyplaceamerica.com/directory/fl/manatee-county-12081/towers/", "lat": 27.4958724, "lon": -82.5723194}, {"name": "WWSB-TV transmission site · Rye Rd", "category": "TV broadcast", "description": "CR 678 at Rye Road. FCCInfo lists ASR 1028035, approximately 230.4 m structure / 248.1 m overall.", "record_status": "FCC license record (2026)", "source": "https://fccinfo.com/CMDProULSLookup.php?tabSearchType=UMIB&tabTextBox1=991039", "lat": 27.55611111111111, "lon": -82.36333333333333}];
+const RPTS=[{"freq": "145.430", "offset": "-0.600", "tone": "100.0 Hz", "callsign": "NI4CE", "mode": "FM", "status": "Listed; confirm on air", "notes": "NI4CE linked Big Stick Verna system; city-centre placeholder only", "source": "https://srqares.org/frequencies/", "area": "Verna", "lat": 27.3872659, "lon": -82.2681466}, {"freq": "146.820", "offset": "-0.600", "tone": "100.0 Hz", "callsign": "K4GG", "mode": "FM / club Fusion system", "status": "Club site reports repeater down; some nets listed here; verify", "notes": "MARC club site had different repeater/net-status updates; do not assume on-air", "source": "https://manatee-arc.org/", "area": "Bradenton", "lat": 27.4989, "lon": -82.5748}, {"freq": "146.955", "offset": "-0.600", "tone": "100.0 Hz", "callsign": "K4BRC", "mode": "FM", "status": "Older local list; recheck", "notes": "Older community listing, not independently live-tested", "source": "https://www.sparc-club.org/ham-radio-resources/local-repeater-list/", "area": "Bradenton", "lat": 27.4989, "lon": -82.5748}, {"freq": "147.195", "offset": "+0.600", "tone": "103.5 Hz", "callsign": "ARES / KM4EC (other directories: KF4MBN)", "mode": "FM", "status": "Listed as ARES primary; current net usage varies", "notes": "Countywide ARES frequency; callsign attribution differs by source", "source": "https://srqares.org/frequencies/", "area": "Bradenton", "lat": 27.4989, "lon": -82.5748}, {"freq": "224.620", "offset": "-1.600", "tone": "100.0 Hz reported", "callsign": "K4CVL (directory attribution)", "mode": "FM", "status": "Older community report; recheck", "notes": "Community page confirms the 224.620 220-MHz repeater; current callsign/tone not independently established", "source": "https://www.n1gy.com/information-for-hams-visiting-west-central-florida.html", "area": "Bradenton", "lat": 27.4989, "lon": -82.5748}, {"freq": "442.125", "offset": "+5.000", "tone": "100.0 Hz", "callsign": "KF4MBN (older listing)", "mode": "FM", "status": "Older directory; recheck", "notes": "Historical ARES/RACES listing; another directory reports KM4EC", "source": "https://www.artscipub.com/repeaters/search/index.asp?state=FLORIDA", "area": "Bradenton", "lat": 27.4989, "lon": -82.5748}, {"freq": "442.950", "offset": "+5.000", "tone": "100.0 Hz", "callsign": "NI4CE", "mode": "FM / NXDN reported", "status": "Listed; confirm on air", "notes": "NI4CE linked Verna system; city-centre placeholder only", "source": "https://srqares.org/frequencies/", "area": "Verna", "lat": 27.3872659, "lon": -82.2681466}, {"freq": "443.225", "offset": "+5.000", "tone": "103.5 Hz", "callsign": "KF4MBN (older listing)", "mode": "FM", "status": "Older directory; recheck", "notes": "Historical ARES/RACES listing; another directory reports KM4EC", "source": "https://www.artscipub.com/repeaters/search/index.asp?state=FLORIDA", "area": "Bradenton", "lat": 27.4989, "lon": -82.5748}, {"freq": "443.875", "offset": "+5.000", "tone": "100.0 Hz", "callsign": "NI4MX", "mode": "FM / Fusion (directory)", "status": "Listed; confirm on air", "notes": "MARC/SRQARES tactical frequency; source provides general area, not site GPS", "source": "https://srqares.org/frequencies/", "area": "Lakewood Ranch", "lat": 27.405, "lon": -82.42}];
+const CATS={
+  'Communications / antenna':{color:'#6f8496',label:'Communications / antenna'},
+  'AM / FM broadcast':{color:'#e98d00',label:'AM / FM broadcast'},
+  'TV broadcast':{color:'#a94ab6',label:'TV broadcast'},
+  'Licensed radio facility':{color:'#22a067',label:'FCC licensed facility'}
+};
+const RPT_COLOR='#f0aa46';
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const osm=(la,lo)=>`https://www.openstreetmap.org/?mlat=${la}&mlon=${lo}#map=16/${la}/${lo}`;
+const $=id=>document.getElementById(id);
+
+/* tables first, so the page is useful even if the map library fails */
+function towerRows(q){
+  q=(q||'').toLowerCase().trim();
+  const list=TOWERS.filter(t=>!q||[t.name,t.category,t.description,t.record_status].join(' ').toLowerCase().includes(q));
+  $('tcount').textContent=`${list.length} of ${TOWERS.length} towers`;
+  $('tower-rows').innerHTML=list.map(t=>`<tr><td><b>${esc(t.name)}</b></td><td><span class="swatch" style="background:${(CATS[t.category]||{}).color||'#888'}"></span>${esc(t.category)}</td><td>${esc(t.record_status)}</td><td>${esc(t.description)}</td><td><a href="${esc(t.source)}" target="_blank" rel="noopener">Source ↗</a></td><td><button class="rowbtn" data-t="${TOWERS.indexOf(t)}">Show on map</button></td></tr>`).join('')||'<tr><td colspan="6">No matches.</td></tr>';
+}
+$('rpt-rows').innerHTML=RPTS.map((r,i)=>`<tr><td class="num"><b>${esc(r.freq)}</b></td><td class="num">${esc(r.offset)}</td><td class="num">${esc(r.tone)}</td><td>${esc(r.callsign)}</td><td>${esc(r.mode)}</td><td>${esc(r.area)} <span class="pill approx">approx</span></td><td>${esc(r.status)}<br><a href="${esc(r.source)}" target="_blank" rel="noopener">Source ↗</a></td><td><button class="rowbtn" data-r="${i}">Show area</button></td></tr>`).join('');
+towerRows('');
+$('tq').addEventListener('input',e=>towerRows(e.target.value));
+
+/* map */
+let map=null;const markers={t:[],r:{}};const groups={};
+if(typeof L!=='undefined'){
+  map=L.map('map',{scrollWheelZoom:false,tap:true}).setView([27.58,-82.43],11);
+  const tiles=L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:18,attribution:'© OpenStreetMap contributors'}).addTo(map);
+  let tileErrors=0;tiles.on('tileerror',()=>{if(++tileErrors>3)$('tilenote').hidden=false;});
+  Object.keys(CATS).forEach(k=>groups[k]=L.layerGroup().addTo(map));
+  groups.rpt=L.layerGroup().addTo(map);
+  TOWERS.forEach((t,i)=>{
+    const c=(CATS[t.category]||{color:'#888'}).color;
+    const m=L.circleMarker([t.lat,t.lon],{radius:7,color:'#ffffff',weight:2,fillColor:c,fillOpacity:.92});
+    m.bindPopup(`<b>${esc(t.name)}</b><br>${esc(t.category)} · ${esc(t.record_status)}<br>${esc(t.description)}<br><a href="${esc(t.source)}" target="_blank" rel="noopener">Source</a> · <a href="${osm(t.lat,t.lon)}" target="_blank" rel="noopener">OSM</a>`);
+    m.addTo(groups[t.category]||groups['Communications / antenna']);markers.t[i]=m;
+  });
+  const byPt=new Map();
+  RPTS.forEach((r,i)=>{const k=r.lat.toFixed(5)+','+r.lon.toFixed(5);if(!byPt.has(k))byPt.set(k,[]);byPt.get(k).push(i);});
+  byPt.forEach(ids=>{
+    const r0=RPTS[ids[0]];
+    const m=L.circleMarker([r0.lat,r0.lon],{radius:13,color:RPT_COLOR,weight:3,dashArray:'5 4',fillColor:RPT_COLOR,fillOpacity:.18});
+    m.bindPopup(`<span class="warn">Approximate area: ${esc(r0.area)} center, not a repeater site</span><hr>`+ids.map(i=>{const r=RPTS[i];return `<b>${esc(r.freq)} MHz</b> ${esc(r.offset)} · ${esc(r.tone)}<br>${esc(r.callsign)} · ${esc(r.mode)}<br><small>${esc(r.status)}</small>`;}).join('<hr>'));
+    m.addTo(groups.rpt);ids.forEach(i=>markers.r[i]=m);
+  });
+  const all=L.featureGroup([...markers.t,...Object.values(markers.r)]);map.fitBounds(all.getBounds().pad(0.08));
+  map.attributionControl.setPrefix(false);
+} else {
+  $('map').innerHTML='<p style="padding:16px">The map library did not load. Use the lists below.</p>';
+}
+/* layer toggles */
+const layerDefs=[...Object.keys(CATS).map(k=>[k,CATS[k].label,CATS[k].color]),['rpt','Ham repeater areas',RPT_COLOR]];
+$('layers').innerHTML=layerDefs.map(([k,label,c],i)=>`<label><input type="checkbox" checked data-layer="${esc(k)}" id="ly${i}"><span class="swatch" style="background:${c}"></span>${esc(label)}</label>`).join('');
+$('layers').addEventListener('change',e=>{const k=e.target.dataset.layer;if(!map||!groups[k])return;e.target.checked?groups[k].addTo(map):map.removeLayer(groups[k]);});
+/* show-on-map buttons */
+document.addEventListener('click',e=>{
+  const b=e.target.closest('.rowbtn');if(!b||!map)return;
+  const m=b.dataset.t!==undefined?markers.t[+b.dataset.t]:markers.r[+b.dataset.r];if(!m)return;
+  const k=b.dataset.t!==undefined?TOWERS[+b.dataset.t].category:'rpt';
+  if(groups[k]&&!map.hasLayer(groups[k])){groups[k].addTo(map);const box=document.querySelector(`[data-layer="${CSS.escape(k)}"]`);if(box)box.checked=true;}
+  $('map').scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'center'});
+  map.setView(m.getLatLng(),Math.max(map.getZoom(),13));m.openPopup();
+});
+</script>
+<script src="assets/hub.js" defer></script>
+</body>
+</html>

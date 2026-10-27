@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#08111b">
+<meta name="description" content="Radio Hub: offline-capable ham, LMR, and Meshtastic field tools and Manatee County, Florida radio maps.">
+<title>Radio Hub</title>
+<link rel="stylesheet" href="assets/hub-base.css">
+<link rel="stylesheet" href="assets/hub.css">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon-192.png" type="image/png" sizes="192x192">
+<link rel="apple-touch-icon" href="icons/icon-180.png">
+<style>
+.hero{display:grid;grid-template-columns:minmax(0,1fr);gap:18px;margin-bottom:22px}
+.band{min-width:0}
+.band{border:1px solid var(--h-line);border-radius:14px;background:var(--h-sunk);padding:12px 14px 8px}
+.band .label{margin:0 0 4px;font-size:11px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--h-muted)}
+.bandscroll{overflow-x:auto}
+.bandscroll svg{display:block;width:100%;min-width:640px;height:auto}
+.bandscroll .t{fill:var(--h-muted);font:600 12px var(--h-mono)}
+.bandscroll .s{font:700 12px var(--h-font)}
+.tool{display:flex;flex-direction:column;gap:10px}
+.tool h2{margin:0}
+.tool .meta{font-family:var(--h-mono);font-size:12px;color:var(--h-muted);margin:0}
+.tool ul{margin:0;padding-left:18px;font-size:14px;color:#d5e5f1}
+.tool .foot{margin-top:auto;padding-top:6px;display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between}
+.tool.c-rf{border-top:3px solid var(--h-accent)}
+.tool.c-lmr{border-top:3px solid var(--h-mint)}
+.tool.c-mesh{border-top:3px solid var(--h-violet)}
+.tool.c-map{border-top:3px solid var(--h-amber)}
+.tool.c-inv{border-top:3px solid var(--h-warn)}
+.quick{display:flex;flex-wrap:wrap;gap:8px}
+.files{display:grid;gap:10px}
+.file{display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center;justify-content:space-between;background:var(--h-sunk);border:1px solid var(--h-line);border-radius:10px;padding:10px 12px}
+.file b{display:block}
+.file span{font-size:13px;color:var(--h-muted)}
+.two{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr));gap:14px;margin-top:14px}
+</style>
+</head>
+<body>
+<div class="hubbar"><div class="hubbar-in"><a class="hub-brand" href="index.html"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 10.5 8.6 21.5M12 10.5l3.4 11M9.6 18h4.8"/><circle cx="12" cy="8.6" r="1.7" fill="currentColor" stroke="none"/><path d="M8.6 5.4a4.8 4.8 0 0 0 0 6.4M15.4 5.4a4.8 4.8 0 0 1 0 6.4M5.8 2.8a8.6 8.6 0 0 0 0 11.6M18.2 2.8a8.6 8.6 0 0 1 0 11.6"/></svg><span>Radio Hub</span></a><nav class="hubnav" aria-label="Radio Hub sections"><a href="index.html" aria-current="page">Home</a><a href="../index.html">RF Bench Lab</a><a href="lmr-toolkit.html">LMR Toolkit</a><a href="meshtastic.html">Meshtastic</a><a href="maps.html">Area maps</a><a href="inventory.html">County inventory</a></nav></div></div>
+<main class="wrap">
+  <section class="hero">
+    <div class="pagehead">
+      <div>
+        <p class="eyebrow">Ham · LMR · Mesh · Manatee County, FL</p>
+        <h1>Radio Hub</h1>
+        <p class="lede">One place for my radio study and field tools. Every page is static, works offline after the first visit, and uses public data only.</p>
+      </div>
+      <span class="pill off">Offline ready</span>
+    </div>
+    <div class="band">
+      <p class="label">Where each tool works on the spectrum</p>
+      <div class="bandscroll"><svg viewBox="0 0 1000 96" role="img" aria-label="Log-scale spectrum from 25 MHz to 1 GHz marking 2 m, VHF LMR, 70 cm, UHF LMR, 700/800 MHz public safety, and the 902 to 928 MHz LoRa band"><line x1="22" y1="58" x2="978" y2="58" stroke="#365066" stroke-width="2"/><line x1="69.2" y1="54" x2="69.2" y2="66" stroke="#4d6a80" stroke-width="1"/><text class="t" x="69.2" y="84" text-anchor="middle">30</text><line x1="201.6" y1="54" x2="201.6" y2="66" stroke="#4d6a80" stroke-width="1"/><text class="t" x="201.6" y="84" text-anchor="middle">50</text><line x1="381.3" y1="54" x2="381.3" y2="66" stroke="#4d6a80" stroke-width="1"/><text class="t" x="381.3" y="84" text-anchor="middle">100</text><line x1="486.3" y1="54" x2="486.3" y2="66" stroke="#4d6a80" stroke-width="1"/><text class="t" x="486.3" y="84" text-anchor="middle">150</text><line x1="560.9" y1="54" x2="560.9" y2="66" stroke="#4d6a80" stroke-width="1"/><text class="t" x="560.9" y="84" text-anchor="middle">200</text><line x1="666.0" y1="54" x2="666.0" y2="66" stroke="#4d6a80" stroke-width="1"/><text class="t" x="666.0" y="84" text-anchor="middle">300</text><line x1="798.4" y1="54" x2="798.4" y2="66" stroke="#4d6a80" stroke-width="1"/><text class="t" x="798.4" y="84" text-anchor="middle">500</text><line x1="885.6" y1="54" x2="885.6" y2="66" stroke="#4d6a80" stroke-width="1"/><text class="t" x="885.6" y="84" text-anchor="middle">700</text><line x1="978.0" y1="54" x2="978.0" y2="66" stroke="#4d6a80" stroke-width="1"/><text class="t" x="978.0" y="84" text-anchor="end">1000 MHz</text><rect x="475.8" y="49" width="7.1" height="18" rx="3" fill="#84d5ff" fill-opacity=".85"/><line x1="479.3" y1="22" x2="479.3" y2="48" stroke="#84d5ff" stroke-width="1" stroke-opacity=".6"/><text class="s" x="479.3" y="18" text-anchor="middle" fill="#84d5ff">2 m ham</text><rect x="486.3" y="49" width="38.5" height="18" rx="3" fill="#a9e9cd" fill-opacity=".85"/><line x1="505.6" y1="42" x2="505.6" y2="48" stroke="#a9e9cd" stroke-width="1" stroke-opacity=".6"/><text class="s" x="505.6" y="38" text-anchor="middle" fill="#a9e9cd">VHF LMR</text><rect x="753.2" y="49" width="17.9" height="18" rx="3" fill="#84d5ff" fill-opacity=".85"/><line x1="762.1" y1="22" x2="762.1" y2="48" stroke="#84d5ff" stroke-width="1" stroke-opacity=".6"/><text class="s" x="762.1" y="18" text-anchor="middle" fill="#84d5ff">70 cm ham</text><rect x="771.1" y="49" width="11.3" height="18" rx="3" fill="#a9e9cd" fill-opacity=".85"/><line x1="776.7" y1="42" x2="776.7" y2="48" stroke="#a9e9cd" stroke-width="1" stroke-opacity=".6"/><text class="s" x="776.7" y="38" text-anchor="middle" fill="#a9e9cd">UHF LMR</text><rect x="909.9" y="49" width="31.7" height="18" rx="3" fill="#a9e9cd" fill-opacity=".85"/><line x1="925.8" y1="22" x2="925.8" y2="48" stroke="#a9e9cd" stroke-width="1" stroke-opacity=".6"/><text class="s" x="941.6" y="18" text-anchor="end" fill="#a9e9cd">700/800 public safety</text><rect x="951.3" y="49" width="7.4" height="18" rx="3" fill="#c9b6ff" fill-opacity=".85"/><line x1="955.0" y1="42" x2="955.0" y2="48" stroke="#c9b6ff" stroke-width="1" stroke-opacity=".6"/><text class="s" x="958.6" y="38" text-anchor="end" fill="#c9b6ff">LoRa 915</text></svg></div>
+    </div>
+  </section>
+
+  <section class="grid" aria-label="Tools">
+    <article class="card tool c-rf">
+      <div class="pills"><span class="pill off">Offline</span><span class="pill ext">Study</span></div>
+      <h2>RF Bench Lab</h2>
+      <p class="meta">8 modules · 40 questions · Technician 2026-2030 pool</p>
+      <ul>
+        <li>Wave scope with space, time, and phasor views</li>
+        <li>SWR, coax loss, and antenna trim sweeps</li>
+        <li>Repeater offsets and CHIRP rows, link budgets, LoRa</li>
+        <li>P25, DMR, and PoC compared; FM and AM spectrum</li>
+      </ul>
+      <div class="foot"><a class="btn" href="../index.html">Open RF Bench Lab</a></div>
+    </article>
+
+    <article class="card tool c-lmr">
+      <div class="pills"><span class="pill off">Offline</span><span class="pill ext">Field</span></div>
+      <h2>LMR Field Toolkit</h2>
+      <p class="meta">v2.1.0 · 11 calculators · 2 checklists</p>
+      <ul>
+        <li>Frequency to band and service lookup</li>
+        <li>dBm, µV, VSWR, feedline, DC drop, battery, FSPL, NAC</li>
+        <li>Mobile install and site maintenance checklists</li>
+        <li>Troubleshooting for 10 symptoms, ticket note builder</li>
+      </ul>
+      <div class="foot"><a class="btn" href="lmr-toolkit.html">Open toolkit</a></div>
+    </article>
+
+    <article class="card tool c-mesh">
+      <div class="pills"><span class="pill off">Offline</span><span class="pill ext">Course</span></div>
+      <h2>Meshtastic O&amp;M Course</h2>
+      <p class="meta">6 blocks · 24 modules · 12-question check</p>
+      <ul>
+        <li>Channels, roles, ACKs, presets, and hop limits</li>
+        <li>MQTT uplink and downlink, log reading, fault codes</li>
+        <li>Pre-op, maintenance, and final exam checklists</li>
+        <li>Florida Mesh conventions and weekly net</li>
+      </ul>
+      <div class="foot"><a class="btn" href="meshtastic.html">Start course</a><a class="btn ghost small" href="https://client.meshtastic.org" target="_blank" rel="noopener">Web client ↗</a></div>
+    </article>
+
+    <article class="card tool c-map">
+      <div class="pills"><span class="pill off">Lists offline</span><span class="pill net">Tiles online</span></div>
+      <h2>Area Maps</h2>
+      <p class="meta">33 towers · 9 repeater areas</p>
+      <ul>
+        <li>Parrish-area broadcast, cell, and licensed towers</li>
+        <li>Manatee ham repeaters with frequency, offset, tone</li>
+        <li>Repeater pins are town-center approximations</li>
+        <li>GPX and GeoJSON downloads for OsmAnd and uMap</li>
+      </ul>
+      <div class="foot"><a class="btn" href="maps.html">Open maps</a></div>
+    </article>
+
+    <article class="card tool c-inv">
+      <div class="pills"><span class="pill net">Needs internet to load</span></div>
+      <h2>County Inventory</h2>
+      <p class="meta">Manatee County GIS layers 2 and 3</p>
+      <ul>
+        <li>Pulls every county tower and cell-site record live</li>
+        <li>Ham, simplex, MeshCore, and APRS hobby layers</li>
+        <li>Import your own GPX, KML, GeoJSON, or CSV</li>
+        <li>Exports for OsmAnd, Google My Maps, and Earth</li>
+      </ul>
+      <div class="foot"><a class="btn" href="inventory.html">Open inventory</a></div>
+    </article>
+
+    <article class="card tool">
+      <h2>Quick links</h2>
+      <p class="meta">Official and regional references</p>
+      <div class="quick">
+        <a class="btn ghost small" href="https://client.meshtastic.org" target="_blank" rel="noopener">Meshtastic web client ↗</a>
+        <a class="btn ghost small" href="https://meshtastic.org/docs" target="_blank" rel="noopener">Meshtastic docs ↗</a>
+        <a class="btn ghost small" href="https://areyoumeshingwith.us/docs/meshtastic/configuration/" target="_blank" rel="noopener">Florida Mesh config ↗</a>
+        <a class="btn ghost small" href="https://map.areyoumeshingwith.us/" target="_blank" rel="noopener">Florida Mesh map ↗</a>
+        <a class="btn ghost small" href="https://www.repeaterbook.com/repeaters/location_search.php?loc=Manatee&amp;state_id=12&amp;type=county" target="_blank" rel="noopener">RepeaterBook Manatee ↗</a>
+        <a class="btn ghost small" href="https://www.arrl.org/band-plan" target="_blank" rel="noopener">ARRL band plan ↗</a>
+        <a class="btn ghost small" href="https://ncvec.org/index.php/2026-2030-technician-question-pool" target="_blank" rel="noopener">Tech question pool ↗</a>
+      </div>
+    </article>
+  </section>
+
+  <div class="two">
+    <section class="card" id="downloads">
+      <h2>Map files</h2>
+      <div class="files">
+        <div class="file"><div><b>Manatee ham repeaters (GPX)</b><span>9 waypoints, approximate areas only · OsmAnd, Gaia, Garmin</span></div><a class="btn small" href="data/Manatee_Amateur_Repeaters_Area_Only_OsmAnd.gpx" download>Download GPX</a></div>
+        <div class="file"><div><b>Parrish-area radio towers (GeoJSON)</b><span>33 points with source per pin · uMap, QGIS, geojson.io</span></div><a class="btn small" href="data/Parrish_Radio_Towers_OSM_uMap.geojson" download>Download GeoJSON</a></div>
+      </div>
+      <p class="fine">OsmAnd: Menu, My Places, Import. uMap: Import data, choose GeoJSON. Repeater pins mark town centers, not transmitter sites.</p>
+    </section>
+
+    <section class="card" id="privacy">
+      <h2>What this site leaves out</h2>
+      <ul>
+        <li>No home address or home coordinates. The tower map's distance-from-center field was removed because it could be used to locate the center point.</li>
+        <li>No MQTT usernames, passwords, or broker credentials.</li>
+        <li>No Meshtastic or MeshCore node IDs.</li>
+        <li>No analytics, accounts, cookies, or third-party scripts. Map libraries ship with the site.</li>
+      </ul>
+      <p class="fine">Tower and repeater entries come from public directories and records. Many are historical listings and do not prove a site is active. Checklist progress and quiz answers stay in your browser.</p>
+    </section>
+  </div>
+
+  <section class="card" id="offline" style="margin-top:14px">
+    <h2>Using it offline</h2>
+    <p>Open any page once while online. The browser then saves every hub page, the RF Bench Lab, and the map files. To keep it on your phone, use your browser's Add to Home screen or Install option.</p>
+    <p class="fine">Still needs a connection: map background tiles, the live county GIS pull, live APRS data, and external links.</p>
+  </section>
+</main>
+<div class="hubfoot" role="contentinfo"><div class="hubfoot-in"><p>Radio Hub · static pages, offline after first visit, no tracking. Public tower and repeater data only; verify before relying on any listing.</p><p><a href="index.html#privacy">What this site leaves out</a> · <a href="https://github.com/tanks3c/rf-bench-lab/tree/main/hub" target="_blank" rel="noopener">Source</a></p></div></div>
+<script src="assets/hub.js" defer></script>
+</body>
+</html>

@@ -1,0 +1,401 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0b1420">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; base-uri 'none'; object-src 'none'; form-action 'none'; script-src 'sha256-UmAsbAjlliOAN1cBD4QEOlMUOFg4wCq/Ov/oAfFtZGg=' 'sha256-xsLBgJN/TIx6O4i2F9/HLy7uw9rPoRi8VQbMH23VnNg='; style-src 'sha256-iB0T8M2jVIAFUyHIqBa8Wn9jqDVgOGrZon9tsr4Vfsg='; style-src-attr 'none'; img-src 'self' data:; manifest-src 'self'; connect-src 'self'; worker-src 'self'">
+<meta name="description" content="Offline U.S. land mobile radio field toolkit: frequency band lookup, RF calculators, mobile installation and site checklists, troubleshooting, and ticket notes.">
+<title>LMR Field Toolkit · Radio Hub</title>
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="icon" href="./icons/icon-192.png" type="image/png" sizes="192x192">
+<link rel="apple-touch-icon" href="./icons/icon-180.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<style>
+:root{
+  --h-bg:#0b1420; --h-bar:#08111b; --h-panel:#132435; --h-panel2:#172b3e; --h-sunk:#091a28;
+  --h-fg:#edf6fd; --h-muted:#afc2d1; --h-line:#365066; --h-accent:#84d5ff; --h-accent-ink:#052439;
+  --h-mint:#a9e9cd; --h-warn:#ffd29a; --h-amber:#f0aa46; --h-red:#ffb2b2; --h-violet:#c9b6ff;
+  --h-font:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  --h-mono:ui-monospace,SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace;
+  color-scheme:dark;
+}
+.hubbar{background:var(--h-bar);border-bottom:1px solid var(--h-line);font-family:var(--h-font)}
+.hubbar-in{max-width:1100px;margin:0 auto;padding-block:10px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:flex;flex-wrap:wrap;align-items:center;gap:8px 20px}
+.hub-brand{display:inline-flex;align-items:center;gap:8px;color:var(--h-fg);text-decoration:none;font-weight:800;font-size:16px;letter-spacing:-.01em;white-space:nowrap}
+.hub-brand svg{width:22px;height:22px;color:var(--h-accent);flex:0 0 auto}
+.hub-brand small{font-weight:600;color:var(--h-muted);font-size:11px;letter-spacing:.12em;text-transform:uppercase}
+.hubnav{display:flex;gap:4px;overflow-x:auto;flex:1 1 auto;min-width:0;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+.hubnav::-webkit-scrollbar{display:none}
+.hubnav a{flex:0 0 auto;color:var(--h-muted);text-decoration:none;font:650 13px/1.2 var(--h-font);padding:8px 11px;border-radius:9px;white-space:nowrap}
+.hubnav a:hover{color:var(--h-fg);background:var(--h-panel)}
+.hubnav a[aria-current="page"]{color:var(--h-accent-ink);background:var(--h-accent)}
+.hubnav a .ext{opacity:.7;margin-left:3px}
+.hubnav a:focus-visible,.hub-brand:focus-visible,.hubfoot a:focus-visible{outline:2px solid var(--h-accent);outline-offset:2px}
+@media (max-width:760px){.hubnav{flex-basis:100%;margin-inline:-4px}}
+.hubfoot{border-top:1px solid var(--h-line);color:var(--h-muted);font:12px/1.6 var(--h-font);margin-top:28px;background:var(--h-bar)}
+.hubfoot-in{max-width:1100px;margin:0 auto;padding-block:18px 28px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:flex;flex-wrap:wrap;gap:6px 22px;justify-content:space-between}
+.hubfoot p{margin:0;max-width:72ch}
+.hubfoot a{color:var(--h-accent)}
+@media print{.hubbar,.hubfoot{display:none !important}}
+:root{color-scheme:dark;--bg:#0b1420;--panel:#132435;--panelhi:#1b3348;--fg:#edf6fd;--muted:#afc2d1;--line:#365066;--accent:#84d5ff;--mint:#a9e9cd;--warn:#ffd29a;--red:#ffb2b2}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:radial-gradient(ellipse 80% 460px at 75% 0%,#183953 0%,transparent 70%),var(--bg);color:var(--fg);font:15px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif}
+button,input,select,textarea{font:inherit}
+button{cursor:pointer;touch-action:manipulation}
+a{color:var(--accent)}
+main{max-width:1000px;margin:auto;padding:20px 14px 75px}
+header{display:flex;justify-content:space-between;align-items:flex-start;gap:14px;padding:4px 3px 14px}
+.eyebrow{font-size:11px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;color:var(--accent)}
+h1{font-size:clamp(28px,5.5vw,42px);line-height:1.06;letter-spacing:-1px;margin:5px 0}
+.subtitle{color:var(--muted);margin:6px 0 0;font-size:13px}
+.offline{border:1px solid #418575;color:#bcf9df;background:#193b36;border-radius:28px;padding:5px 10px;white-space:nowrap;font-size:11px;font-weight:800;margin-top:10px}
+.tabs{display:flex;gap:8px;overflow-x:auto;position:sticky;top:0;z-index:10;background:#0b1420f7;padding:11px 0 13px;margin-bottom:12px;scrollbar-width:thin}
+.tab{flex-shrink:0;padding:10px 14px;border-radius:14px;background:#16293a;border:1px solid #395167;color:#cfe1ed;font-weight:750;font-size:13px}
+.tab[aria-selected="true"]{background:#a9e8ff;color:#092238;border-color:#a9e8ff}
+.tab:focus-visible,button:focus-visible{outline:3px solid #b5ebff;outline-offset:2px}
+.page[hidden]{display:none!important}
+.card{border:1px solid var(--line);border-radius:17px;background:linear-gradient(145deg,#172b3e,#102231);padding:18px;margin-bottom:14px;box-shadow:0 8px 20px #00000015}
+.card h2{font-size:18px;margin:0 0 12px;letter-spacing:-.2px}
+.card h3{font-size:15px;margin:12px 0 8px}
+p{margin:8px 0 12px}
+.lead{color:#bdd4e4;font-size:14px;margin-bottom:17px}
+label{font-weight:700;color:#bdcfdb;font-size:12px;display:block;margin-bottom:6px}
+input:not([type=checkbox]),select,textarea{display:block;width:100%;min-width:0;background:#091a28;color:#f2fbff;border:1px solid #54738b;border-radius:11px;padding:11px 12px;min-height:45px;font-size:16px;outline:0}
+textarea{resize:vertical;min-height:78px}
+input:focus,select:focus,textarea:focus{border-color:#8ddbff;box-shadow:0 0 0 3px #8ddbff30}
+input[type=checkbox]{width:19px;height:19px;accent-color:#85d0ff;flex:0 0 auto;margin:2px 0 0}
+.cols{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.cols3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.row{display:flex;gap:10px;align-items:flex-end}
+.row>*{min-width:0}
+.grow{flex:1}
+.field{margin-bottom:12px}
+.row .field{flex:1}
+.row .unit-field{max-width:125px}
+.chips{display:flex;flex-wrap:wrap;gap:7px;margin-top:12px}
+.chips button,.smallbtn{padding:7px 11px;border-radius:20px;border:1px solid #4b728a;background:#244055;color:#e8f7fd;font-size:12px;font-weight:740}
+.chips button:hover,.smallbtn:hover{background:#315870}
+.result{border-color:#3c859c;background:linear-gradient(145deg,#123e54,#142e42)}
+.pill{display:inline-block;font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.05em;color:#b1f5d8;border:1px solid #478b78;background:#193a35;border-radius:30px;padding:4px 9px}
+.pill.alt{color:#ffe1a6;border-color:#876b49;background:#423224}
+.large{font-size:clamp(33px,7vw,57px);font-weight:850;letter-spacing:-1px;line-height:1.08;margin:10px 0}
+.result-range{font-size:17px;font-weight:650;color:#c9eaf8;margin:0 0 14px}
+.metric-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;border-top:1px solid #689ab14d;padding-top:12px}
+.metric .key{font-size:12px;color:#b3cbd7}
+.metric .value{font-size:19px;font-weight:800;overflow-wrap:anywhere}
+.fine{color:var(--muted);font-size:12px;line-height:1.6}
+.alert{background:#413423;border:1px solid #897148;border-radius:12px;padding:11px 13px;color:#ffdfad;font-size:13px;margin:12px 0}
+.good{color:var(--mint)}
+.warning-text{color:var(--warn)}
+.output{background:#0b2130;border:1px solid #496981;border-radius:11px;padding:12px 13px;margin-top:10px;min-height:68px;font-size:14px}
+.output strong{font-size:19px;color:#c7f7f4;font-weight:820}
+button.primary{border:1px solid #a9e8ff;background:#b1eaff;color:#052439;padding:10px 15px;font-weight:800;border-radius:12px;font-size:14px}
+button.ghost{border:1px solid #55728b;background:#1e384d;color:var(--fg);padding:10px 15px;font-weight:750;border-radius:12px;font-size:14px}
+.actions{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:12px}
+details{border-top:1px solid #355269;padding:11px 0}
+details:first-child{border-top:0}
+summary{font-weight:770;color:#e1f0fc;cursor:pointer;font-size:14px}
+details p,details ul{font-size:13px;color:#c3d7e5}
+table{width:100%;border-collapse:collapse;margin-top:9px;line-height:1.38}
+th,td{text-align:left;padding:9px 7px;border-bottom:1px solid #314d61;font-size:12px;vertical-align:top}
+th{font-size:12px;color:#b5cedd}
+tr:last-child td{border-bottom:0}
+ul,ol{padding-left:22px;margin:8px 0 12px}
+li{margin:6px 0}
+.mini{font-size:12px;color:#bed2e2}
+.checklist{display:grid;gap:1px}
+.checkrow{display:flex;align-items:start;gap:12px;border-bottom:1px solid #2c475b;padding:11px 2px;font-size:13px;color:#d9eafa}
+.checkrow:last-child{border-bottom:0}
+.checkrow label{font-size:13px;margin:0;color:#d9eafa;font-weight:520;flex:1;cursor:pointer}
+.progress{height:7px;background:#334c61;border-radius:20px;overflow:hidden;margin-top:11px}
+.progress div{height:100%;width:0;background:#8fe3d0;transition:width .2s}
+.progresslabel{font-size:12px;color:#b7cdde}
+.toolhint{font-size:12px;color:#abc8d9;margin-top:9px}
+.quickgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+.quickitem{border:1px solid #34566c;background:#132b3c;border-radius:10px;padding:10px;font-size:13px}
+.quickitem b{display:block;color:#a9e5ff;font-size:12px;margin-bottom:3px}
+.separator{height:1px;background:#38566b;margin:18px 0}
+.kbd{padding:1px 5px;border:1px solid #60778b;border-radius:4px;font-size:12px;color:#f1f9fe}
+footer{color:#93adbe;font-size:12px;padding:18px 3px}
+@media(max-width:600px){.cols3{grid-template-columns:1fr 1fr}.card{padding:15px}.row{gap:7px}.large{font-size:37px}.metric .value{font-size:16px}.tab{font-size:12px;padding:9px 11px}}
+@media(max-width:390px){.cols3{grid-template-columns:1fr}.card{padding:13px}.tabs{margin-left:-4px;margin-right:-4px}}
+@media print{body{background:white!important;color:#111!important}.tabs,.actions,.chips,.offline{display:none!important}.page[hidden]{display:block!important}.card{background:#fff!important;border:1px solid #aaa;box-shadow:none;break-inside:avoid;color:#111}.result,.output{background:white!important}.fine,label,p,li,th,td,summary{color:#333!important}h1,h2,h3{color:#111!important}}
+.install-panel{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;border:1px solid #3f7189;background:#152f42;padding:11px 14px;border-radius:14px;margin-bottom:12px;font-size:13px}
+.install-panel[hidden]{display:none!important}
+.install-panel strong{display:block;color:#e4f8ff}
+.install-panel span{color:#b6d4e6}
+.install-panel button{background:#c1edff;color:#082133;border:0;border-radius:10px;font-weight:850;padding:10px 14px}
+@media print{.install-panel{display:none!important}}
+</style>
+</head>
+<body>
+<div class="hubbar"><div class="hubbar-in"><a class="hub-brand" href="index.html"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 10.5 8.6 21.5M12 10.5l3.4 11M9.6 18h4.8"/><circle cx="12" cy="8.6" r="1.7" fill="currentColor" stroke="none"/><path d="M8.6 5.4a4.8 4.8 0 0 0 0 6.4M15.4 5.4a4.8 4.8 0 0 1 0 6.4M5.8 2.8a8.6 8.6 0 0 0 0 11.6M18.2 2.8a8.6 8.6 0 0 1 0 11.6"/></svg><span>Radio Hub</span></a><nav class="hubnav" aria-label="Radio Hub sections"><a href="index.html">Home</a><a href="../index.html">RF Bench Lab</a><a href="lmr-toolkit.html" aria-current="page">LMR Toolkit</a><a href="meshtastic.html">Meshtastic</a><a href="maps.html">Area maps</a><a href="inventory.html">County inventory</a></nav></div></div>
+<main>
+<header><div><div class="eyebrow">Radio technician quick reference · v2.1.0</div><h1>LMR Field Toolkit</h1><p class="subtitle">Band ID · RF math · Mobile installs · Sites · Diagnostics</p></div><span class="offline">OFFLINE READY</span></header>
+<div class="install-panel" id="install-panel" hidden>
+  <div><strong>Install LMR Toolkit</strong><span>Launch from your home screen; works offline after first load.</span></div>
+  <button id="install-app" type="button">Install app</button>
+</div>
+<nav class="tabs" role="tablist" aria-label="Toolkit areas">
+<button class="tab" id="tab-band" data-tab="band" role="tab" aria-selected="true" aria-controls="page-band">Band ID</button>
+<button class="tab" id="tab-calc" data-tab="calc" role="tab" aria-selected="false" tabindex="-1" aria-controls="page-calc">Calculators</button>
+<button class="tab" id="tab-install" data-tab="install" role="tab" aria-selected="false" tabindex="-1" aria-controls="page-install">Mobile install</button>
+<button class="tab" id="tab-site" data-tab="site" role="tab" aria-selected="false" tabindex="-1" aria-controls="page-site">Site / Infra</button>
+<button class="tab" id="tab-diag" data-tab="diag" role="tab" aria-selected="false" tabindex="-1" aria-controls="page-diag">Troubleshoot</button>
+<button class="tab" id="tab-notes" data-tab="notes" role="tab" aria-selected="false" tabindex="-1" aria-controls="page-notes">Field note</button>
+<button class="tab" id="tab-ref" data-tab="ref" role="tab" aria-selected="false" tabindex="-1" aria-controls="page-ref">Reference</button>
+</nav>
+
+<section class="page" id="page-band" role="tabpanel" aria-labelledby="tab-band">
+ <div class="card"><h2>Frequency → band / service</h2><div class="row"><div class="field grow"><label for="frequency">Frequency (suffix optional)</label><input id="frequency" type="text" inputmode="decimal" value="146.520" spellcheck="false" autocomplete="off" placeholder="146.520 or 3685 kHz"></div><div class="field unit-field"><label for="freq-unit">Unit</label><select id="freq-unit"><option>MHz</option><option>kHz</option><option>GHz</option><option>Hz</option></select></div></div><div class="chips" id="freq-presets"><button data-f="146.520">2m ham</button><button data-f="155.500">VHF LMR</button><button data-f="460.000">UHF LMR</button><button data-f="773.25625">700 PS</button><button data-f="851.0125">800 MHz</button><button data-f="3.685">75m HF</button><button data-f="162.550">NOAA</button></div></div>
+ <div class="card result" aria-live="polite"><span id="freq-kind" class="pill">U.S. amateur allocation</span><div id="freq-name" class="large">2 meters</div><p id="freq-range" class="result-range">144–148 MHz</p><div class="metric-grid"><div class="metric"><div class="key">RF classification</div><div class="value" id="freq-rf">VHF</div></div><div class="metric"><div class="key">Wavelength</div><div class="value" id="freq-wave">2.05 m</div></div><div class="metric"><div class="key">Equivalent MHz</div><div class="value" id="freq-mhz">146.520 MHz</div></div><div class="metric"><div class="key">Equivalent kHz</div><div class="value" id="freq-khz">146,520 kHz</div></div></div><p id="freq-note" class="mini">U.S. national 2m FM simplex calling frequency.</p><div class="actions"><button type="button" class="primary" id="freq-copy">Copy result</button></div></div>
+ <div class="card"><h2>Quick spectrum neighborhoods</h2><div class="quickgrid"><div class="quickitem"><b>Low-band VHF</b>30–50 MHz (many land-mobile assignments)</div><div class="quickitem"><b>VHF high-band LMR</b>150–174 MHz (shared allocations)</div><div class="quickitem"><b>UHF land mobile</b>450–470 MHz (shared allocations)</div><div class="quickitem"><b>700 MHz public safety</b>769–775 / 799–805 MHz narrowband</div><div class="quickitem"><b>800 MHz land mobile</b>806–824 / 851–869 MHz include Part 90 uses</div><div class="quickitem"><b>900 MHz legacy LMR</b>896–901 / 935–940 MHz; rules evolving</div></div><p class="fine">Identification priority: known exact service/channel examples, special 60m allocations, amateur bands, then general spectrum neighborhoods. A listed channel can overlap larger services; a match never establishes permission to transmit. These are broad recognition ranges, not complete or exclusive allocations. Exact licenses, sub-bands, regional plans, guard bands, channel pairs, and permitted uses are more specific.</p></div>
+</section>
+
+<section class="page" id="page-calc" role="tabpanel" aria-labelledby="tab-calc" hidden>
+ <div class="card"><h2>Power conversion · Watts ↔ dBm</h2><div class="row"><div class="field grow"><label for="pow-num">Input</label><input id="pow-num" type="number" step="any" value="5"></div><div class="field unit-field"><label for="pow-unit">Unit</label><select id="pow-unit"><option>W</option><option>mW</option><option>dBm</option></select></div></div><div id="pow-out" class="output" aria-live="polite"></div><p class="fine">dBm is an absolute power level referenced to 1 milliwatt; dB is a ratio. A 3 dB increase is approximately double power.</p></div>
+ <div class="card"><h2>Receiver signal level · dBm ↔ microvolts</h2><div class="cols"><div class="field"><label for="rx-value">Input level</label><input id="rx-value" type="number" value="-120" step="any"></div><div class="field"><label for="rx-unit">Unit</label><select id="rx-unit"><option>dBm</option><option>µV RMS</option></select></div><div class="field"><label for="rx-imp">System impedance</label><select id="rx-imp"><option value="50">50 Ω</option><option value="75">75 Ω</option></select></div></div><div id="rx-out" class="output" aria-live="polite"></div><p class="fine">Voltage represents an RMS sine-wave level across a matched impedance. Test equipment generator EMF/open-circuit voltage and loaded-terminal readings may differ by 6 dB. Do not confuse these with over-the-air field strength.</p></div>
+ <div class="card"><h2>VSWR / reflected power</h2><div class="cols"><div class="field"><label for="vs-fwd">Forward power (W)</label><input id="vs-fwd" type="number" min="0" step="any" value="50"></div><div class="field"><label for="vs-swr">Measured VSWR</label><input id="vs-swr" type="number" min="1" step="any" value="1.5"></div></div><div id="vs-out" class="output" aria-live="polite"></div><p class="fine">Ideal single-port math; does not locate the fault or account for measurement location, feedline attenuation, or instrument uncertainty. Transmit only into a verified rated load/system under approved procedures.</p></div>
+ <div class="card"><h2>Feedline loss and radiated power</h2><div class="cols"><div class="field"><label for="feed-p">Transmitter power (W)</label><input id="feed-p" type="number" value="50" min="0" step="any"></div><div class="field"><label for="feed-l100">Cable attenuation (dB / 100 ft)</label><input id="feed-l100" type="number" value="2.7" min="0" step="any"></div><div class="field"><label for="feed-ft">Cable length (ft)</label><input id="feed-ft" type="number" value="50" min="0" step="any"></div><div class="field"><label for="feed-extra">Other line losses (dB)</label><input id="feed-extra" type="number" value="0.5" min="0" step="any"></div><div class="field"><label for="feed-gain">Antenna gain (dBi)</label><input id="feed-gain" type="number" value="3" step="any"></div></div><div id="feed-out" class="output" aria-live="polite"></div><p class="fine">Use the actual cable datasheet loss at the operating frequency. ERP is referenced to a half-wave dipole; EIRP is referenced to isotropic. This estimate excludes mismatch and additional system losses unless entered.</p></div>
+ <div class="card"><h2>Antenna length / electrical wavelength</h2><div class="cols"><div class="field"><label for="ant-mhz">Frequency (MHz)</label><input id="ant-mhz" type="number" value="155" min="0" step="any"></div><div class="field"><label for="ant-factor">Physical shortening factor</label><input id="ant-factor" type="number" value="0.95" min="0.01" max="1" step=".01"></div><div class="field"><label for="ant-vf">Coax velocity factor</label><input id="ant-vf" type="number" value="0.66" min="0.01" max="1" step=".01"></div></div><div id="ant-out" class="output" aria-live="polite"></div><p class="fine">Approximate starting lengths only. Final antenna dimensions depend on design, diameter, mounting, ground plane, and matching; tune/test with appropriate equipment. Coax electrical quarter-wave is not a whip antenna length.</p></div>
+ <div class="card"><h2>12 V / 24 V DC voltage drop</h2><div class="cols"><div class="field"><label for="dc-v">Supply voltage (V)</label><input id="dc-v" type="number" value="13.8" min="0" step="any"></div><div class="field"><label for="dc-a">Current draw (A)</label><input id="dc-a" type="number" value="10" min="0" step="any"></div><div class="field"><label for="dc-ft">One-way cable length (ft)</label><input id="dc-ft" type="number" value="15" min="0" step="any"></div><div class="field"><label for="dc-awg">Copper wire gauge</label><select id="dc-awg"><option value="4">4 AWG</option><option value="6">6 AWG</option><option value="8">8 AWG</option><option value="10">10 AWG</option><option value="12" selected>12 AWG</option><option value="14">14 AWG</option><option value="16">16 AWG</option><option value="18">18 AWG</option></select></div></div><div id="dc-out" class="output" aria-live="polite"></div><p class="fine">Uses nominal solid-copper AWG resistance at 20 °C for full-length positive and return conductors. Stranded copper may run about 2–3% higher due to lay length; at 75 °C copper resistance is about 22% higher than at 20 °C (α ≈ 0.00393/°C). Check the actual cable datasheet, insulation, terminations, chassis return, and OEM limits. Voltage-drop math does NOT determine conductor ampacity or fuse size; use NEC Article 310, application requirements, and qualified installation procedures.</p></div>
+ <div class="card"><h2>Battery / UPS runtime (rough)</h2><div class="cols"><div class="field"><label for="bat-ah">Battery capacity (Ah)</label><input id="bat-ah" type="number" value="100" min="0" step="any"></div><div class="field"><label for="bat-util">Usable capacity (%)</label><input id="bat-util" type="number" value="50" min="1" max="100" step="any"></div><div class="field"><label for="bat-idle">Receive/idle draw (A)</label><input id="bat-idle" type="number" value="2" min="0" step="any"></div><div class="field"><label for="bat-tx">Transmit draw (A)</label><input id="bat-tx" type="number" value="12" min="0" step="any"></div><div class="field"><label for="bat-duty">Transmit duty cycle (%)</label><input id="bat-duty" type="number" value="10" min="0" max="100" step="any"></div></div><div id="bat-out" class="output" aria-live="polite"></div><p class="fine">Simple amp-hour estimate. Inverter efficiency, discharge curve, chemistry, age, temperature, generator/charger behavior, and minimum cutoff voltage may materially change actual runtime.</p></div>
+ <div class="card"><h2>IPv4 subnet / backhaul calculator</h2><div class="row"><div class="field grow"><label for="ip-address">IPv4 address</label><input id="ip-address" type="text" value="192.168.10.25" spellcheck="false" placeholder="192.168.10.25"></div><div class="field unit-field"><label for="ip-prefix">CIDR prefix</label><input id="ip-prefix" type="number" min="0" max="32" step="1" value="24"></div></div><div id="ip-out" class="output" aria-live="polite"></div><p class="fine">Quick network math for radio-site switches and backhaul planning. The /31 and /32 cases are shown without assuming conventional host/broadcast use. This offline tool does not ping, scan, or connect to any network.</p></div>
+ <div class="card"><h2>Repeater pair / offset</h2><div class="cols"><div class="field"><label for="rpt-out">Repeater output · subscriber RX (MHz)</label><input id="rpt-out" type="number" value="155" step="any"></div><div class="field"><label for="rpt-in">Repeater input · subscriber TX (MHz)</label><input id="rpt-in" type="number" value="154.4" step="any"></div></div><div id="rpt-result" class="output" aria-live="polite"></div><p class="fine">Offset = subscriber transmit frequency − subscriber receive frequency. Part 90 pairings are plan-specific; do not assume an amateur-band standard offset.</p></div>
+ <div class="card"><h2>P25 NAC hex ↔ decimal</h2><div class="row"><div class="field grow"><label for="nac-input">NAC (up to 3 hex digits, optional $ / 0x)</label><input id="nac-input" type="text" value="293" maxlength="5" spellcheck="false"></div></div><div id="nac-out" class="output" aria-live="polite"></div><p class="fine">Network access code is 12-bit (0x000–0xFFF). This is a number-format converter, not a programming recommendation. Talkgroup IDs, radio IDs, and NACs are different fields.</p></div>
+ <div class="card"><h2>Free-space path loss (FSPL)</h2><div class="cols"><div class="field"><label for="fspl-mhz">Frequency (MHz)</label><input id="fspl-mhz" type="number" value="800" min="0" step="any"></div><div class="field"><label for="fspl-dist">Distance</label><input id="fspl-dist" type="number" value="10" min="0" step="any"></div><div class="field"><label for="fspl-unit">Distance unit</label><select id="fspl-unit"><option value="km">Kilometers (km)</option><option value="mi">Miles (mi)</option></select></div></div><div id="fspl-out" class="output" aria-live="polite"></div><p class="fine">Ideal unobstructed free space only. Distance units are converted before calculation (1 mi = 1.609344 km). Not a coverage forecast; terrain, buildings, foliage, diffraction, multipath, receiver performance, and system noise matter.</p></div>
+</section>
+
+<section class="page" id="page-install" role="tabpanel" aria-labelledby="tab-install" hidden>
+<div class="card"><h2>Mobile radio installation checklist</h2><p class="lead">A general QA sequence for vehicle installations. Follow the radio maker's installation/RF exposure guide and the vehicle OEM upfitter documentation first.</p><div class="alert">Before drilling or routing: identify airbags/curtain deployment areas, wiring harnesses, fuel/brake systems and supplemental restraint components. De-energize and protect circuits as required by the vehicle and equipment manuals.</div><div class="checklist" data-checklist="install">
+<div class="checkrow"><input id="i01" type="checkbox"><label for="i01">Confirm vehicle, work order, radio model, approved antenna, mounting kit, cable/fuse kit, and authorized configuration.</label></div>
+<div class="checkrow"><input id="i02" type="checkbox"><label for="i02">Coordinate vehicle availability, power isolation, and any dispatch/operations outage.</label></div>
+<div class="checkrow"><input id="i03" type="checkbox"><label for="i03">Choose secure, ventilated mounting location; verify seat, passenger, airbag, visibility, and service clearances.</label></div>
+<div class="checkrow"><input id="i04" type="checkbox"><label for="i04">Route power through approved protected paths/grommets; avoid sharp edges, hot zones, hinges, and moving parts.</label></div>
+<div class="checkrow"><input id="i05" type="checkbox"><label for="i05">Use manufacturer-specified power gauge, correctly rated source-side fuse, and approved battery/chassis connections.</label></div>
+<div class="checkrow"><input id="i06" type="checkbox"><label for="i06">Verify ground point and voltage at radio under receive and controlled transmit load; document voltage drop.</label></div>
+<div class="checkrow"><input id="i07" type="checkbox"><label for="i07">Mount antenna in approved location; observe RF exposure separation from occupants and other antennas.</label></div>
+<div class="checkrow"><input id="i08" type="checkbox"><label for="i08">Secure RF cable, weatherproof exterior penetrations, maintain bend radius, strain relief, and connector condition.</label></div>
+<div class="checkrow"><input id="i09" type="checkbox"><label for="i09">Verify configured zone/channel/talkgroup, subscriber identifiers, squelch/NAC where applicable, and permissions without displaying secrets.</label></div>
+<div class="checkrow"><input id="i10" type="checkbox"><label for="i10">Use an approved load/analyzer to check feedline/antenna and power against manufacturer/site acceptance criteria.</label></div>
+<div class="checkrow"><input id="i11" type="checkbox"><label for="i11">Perform authorized transmit/receive test, receive audio, mic/PTT, accessory, ignition sense, and emergency-button procedure.</label></div>
+<div class="checkrow"><input id="i12" type="checkbox"><label for="i12">Secure trim, label equipment, confirm no vehicle warnings, record test readings, and obtain operator sign-off.</label></div>
+</div><div class="progress"><div id="progress-install"></div></div><p class="progresslabel" id="label-install">0/12 complete</p><div class="actions"><button class="ghost" data-reset="install">Reset checklist</button><button class="primary" data-copycheck="install">Copy completed items</button></div></div>
+<div class="card"><h2>Common install symptoms</h2><details><summary>Radio reboots when PTT is pressed</summary><p>Check input voltage at the radio under load, positive and return path voltage drop, fuse holder and terminals, wire gauge, grounds, and current demand. Evaluate with the OEM test procedure.</p></details><details><summary>Alternator whine / ignition hash</summary><p>Compare engine off/on. Check grounds, routing near vehicle electronics, accessory grounds, shield continuity, and approved suppression. Never bypass a protective fuse or airbag circuit.</p></details><details><summary>Good receive, poor transmit range</summary><p>Check RF output into a rated dummy load, then feedline losses, antenna match, connector damage, mount/ground plane, and transmit power setting. Consider receive site issues as well.</p></details><details><summary>Unexpected PTT or accessory behavior</summary><p>Check wiring/pinouts and accessory programming with vendor documentation; inspect for crushed cables and incompatible microphone/remote-head hardware.</p></details></div>
+</section>
+
+<section class="page" id="page-site" role="tabpanel" aria-labelledby="tab-site" hidden>
+<div class="card"><h2>Site / infrastructure maintenance checklist</h2><p class="lead">Baseline what was working before changing anything. Use approved change control, isolation procedures, and site-specific acceptance limits.</p><div class="alert"><strong>Safety gate:</strong> Elevated work, live electrical service, RF exposure zones, generators/fuel systems, lightning protection, and energized batteries require qualified personnel and approved procedures. Coordinate RF shutdown and lockout/tagout when necessary. Do not climb a tower without required training, equipment, and authorization.</div>
+<div class="checklist" data-checklist="site">
+<div class="checkrow"><input id="s01" type="checkbox"><label for="s01">Check approved work order, site access, hazards/weather, PPE, communication plan, and change window.</label></div>
+<div class="checkrow"><input id="s02" type="checkbox"><label for="s02">Notify network/dispatch control; establish baseline alarms, impacted users, and restoration plan.</label></div>
+<div class="checkrow"><input id="s03" type="checkbox"><label for="s03">Record utility AC status, DC plant/rectifier voltage, load current, UPS/battery health, alarms, and generator/ATS status.</label></div>
+<div class="checkrow"><input id="s04" type="checkbox"><label for="s04">Inspect HVAC, moisture, enclosure seals, filter status, pests, corrosion, and environmental monitoring.</label></div>
+<div class="checkrow"><input id="s05" type="checkbox"><label for="s05">Inspect accessible grounding/bonding, surge protection, feedline entry, drip loops, and lightning damage from safe positions.</label></div>
+<div class="checkrow"><input id="s06" type="checkbox"><label for="s06">Check antenna/feedline physical condition and connectors; test return loss/VSWR from approved measurement point.</label></div>
+<div class="checkrow"><input id="s07" type="checkbox"><label for="s07">Compare repeater power, RX sensitivity/BER, modulation or error metrics to established site baseline.</label></div>
+<div class="checkrow"><input id="s08" type="checkbox"><label for="s08">Where equipped, evaluate combiner/duplexer insertion loss and isolation by qualified RF procedure.</label></div>
+<div class="checkrow"><input id="s09" type="checkbox"><label for="s09">Check backhaul link, switch/port status, sync/timing/GPS as applicable, packet loss, and network alarms.</label></div>
+<div class="checkrow"><input id="s10" type="checkbox"><label for="s10">Confirm site registration, control/data path, redundancy/failover, and management alarms with control center.</label></div>
+<div class="checkrow"><input id="s11" type="checkbox"><label for="s11">Restore approved configuration; perform controlled end-to-end call tests on affected services.</label></div>
+<div class="checkrow"><input id="s12" type="checkbox"><label for="s12">Update ticket with before/after readings, photos per policy, alarms, restoration status, and follow-up owner.</label></div>
+</div><div class="progress"><div id="progress-site"></div></div><p class="progresslabel" id="label-site">0/12 complete</p><div class="actions"><button class="ghost" data-reset="site">Reset checklist</button><button class="primary" data-copycheck="site">Copy completed items</button></div></div>
+<div class="card"><h2>Site subsystem quick map</h2><div class="quickgrid"><div class="quickitem"><b>RF path</b>Repeater → combiner/duplexer → feedline → antenna</div><div class="quickitem"><b>Receiver path</b>Antenna → multicoupler/preselector → receiver</div><div class="quickitem"><b>Power</b>Utility/ATS/generator → UPS or DC plant → radio/network equipment</div><div class="quickitem"><b>Control/network</b>Controller/core ↔ backhaul ↔ site switches/repeaters</div><div class="quickitem"><b>Timing</b>GPS/GNSS or network reference as architecture requires</div><div class="quickitem"><b>Environment</b>Cooling, moisture, lightning, alarms, physical access</div></div><p class="fine">Actual topology varies. P25 conventional, simulcast, multicast, and trunked sites may distribute these functions differently.</p></div>
+</section>
+
+<section class="page" id="page-diag" role="tabpanel" aria-labelledby="tab-diag" hidden>
+<div class="card"><h2>Fast diagnostic workflow</h2><p class="lead">Before replacing hardware: identify the affected scope, compare a known-good device/site/channel, reproduce the fault, capture readings, and isolate one layer at a time.</p><div class="cols"><div class="field"><label for="symptom">Select symptom</label><select id="symptom"><option value="no-power">Radio will not power on</option><option value="can-hear">Can receive, cannot transmit</option><option value="tx-no-rx">Can transmit, cannot hear</option><option value="short-range">Weak signal / short range</option><option value="distorted">Garbled / intermittent audio</option><option value="busy">Channel busy / stuck repeater</option><option value="affiliation">P25 trunking affiliation / no call</option><option value="site-offline">Site offline / alarms</option><option value="dead-zone">Coverage dead spot</option><option value="vehicle">Only fails in vehicle / engine running</option></select></div></div><div id="diag-result" class="output" aria-live="polite"></div></div>
+<div class="card"><h2>Identify the layer</h2><div class="quickgrid"><div class="quickitem"><b>Power</b>Battery, supply, fuses, ground, voltage under load</div><div class="quickitem"><b>RF</b>Antenna, coax, duplexer, receiver/desense, interference</div><div class="quickitem"><b>Subscriber</b>Zone, mode, channel, knob, accessories, firmware</div><div class="quickitem"><b>Signaling</b>CTCSS/DCS, NAC, TGID, site/ID, authorization</div><div class="quickitem"><b>Network</b>Backhaul, controllers/core, timing, IP paths</div><div class="quickitem"><b>Environmental</b>Heat, moisture, vibration, lightning, corrosion</div></div></div>
+<div class="card"><h2>Common terms</h2><details><summary>PL / DPL, CTCSS / DCS</summary><p>Analog access/squelch signaling. CTCSS uses a subaudible tone in Hz; DCS uses a coded digital sequence. A mismatch can keep the speaker muted despite an otherwise receivable signal. They are not encryption or private channels.</p></details><details><summary>P25 NAC / TGID / RID</summary><p>NAC is a 12-bit RF network access code. TGID is a talkgroup identifier; RID is a unit/subscriber identifier. Each serves a different purpose. A receive signal with the wrong NAC or talkgroup selection may not become user audio.</p></details><details><summary>P25 Phase I vs Phase II</summary><p>Phase I uses 12.5 kHz FDMA. Phase II trunked voice uses two-slot TDMA over 12.5 kHz channels; system compatibility depends on infrastructure, radio configuration, and deployment.</p></details><details><summary>Conventional vs trunked</summary><p>Conventional radios select a frequency/channel for a call. Trunked radios use a controller and control channel to assign traffic resources dynamically; affiliation and system permissions can matter.</p></details><details><summary>RSSI / BER / SINAD / desense</summary><p>RSSI indicates received signal strength; BER measures bit errors (digital); SINAD evaluates analog receiver sensitivity in a defined test; desensitization reduces receiver performance due to strong unwanted nearby RF. Compare measurements using an approved test setup and vendor criteria.</p></details><details><summary>Duplexer / combiner / multicoupler</summary><p>Duplexer isolates simultaneous transmitter/receiver paths; combiner allows multiple transmitters to share a transmission path; receiver multicoupler distributes signals to multiple receivers. Wrong alignment or poor isolation can create coverage issues.</p></details></div>
+</section>
+
+<section class="page" id="page-notes" role="tabpanel" aria-labelledby="tab-notes" hidden>
+<div class="card"><h2>Field-service ticket builder</h2><p class="lead">Quick structured notes to paste into your organization's authorized ticket system. This page does not submit data to any service.</p><div class="alert">Avoid entering encryption keys, passwords, site access codes, precise sensitive site details, subscriber IDs, or protected operational information into a personal file or clipboard. Use approved systems for restricted data.</div>
+<div class="cols"><div class="field"><label for="ticket-type">Work type</label><select id="ticket-type"><option>Mobile install</option><option>Radio repair</option><option>Coverage complaint</option><option>Site maintenance</option><option>Site outage</option><option>Programming review</option><option>Other</option></select></div><div class="field"><label for="ticket-asset">Asset / work order reference (non-sensitive)</label><input id="ticket-asset" placeholder="Vehicle or asset label"></div></div>
+<div class="field"><label for="ticket-issue">Reported symptom</label><textarea id="ticket-issue" placeholder="What did the operator experience?"></textarea></div>
+<div class="field"><label for="ticket-scope">Scope and conditions</label><textarea id="ticket-scope" placeholder="One radio or many? Engine on/off? Site-wide? Time and environment?"></textarea></div>
+<div class="field"><label for="ticket-tests">Tests and readings</label><textarea id="ticket-tests" placeholder="Equipment used, baseline, power/voltage/VSWR/BER, comparisons"></textarea></div>
+<div class="field"><label for="ticket-fix">Actions / findings</label><textarea id="ticket-fix" placeholder="What changed? What has been ruled out?"></textarea></div>
+<div class="cols"><div class="field"><label for="ticket-status">Disposition</label><select id="ticket-status"><option>In progress</option><option>Restored - verified</option><option>Monitoring</option><option>Escalated</option><option>Awaiting parts</option></select></div><div class="field"><label for="ticket-next">Next action / owner</label><input id="ticket-next" placeholder="Follow-up needed"></div></div>
+<div class="actions"><button class="primary" id="ticket-copy">Copy formatted note</button><button class="ghost" id="ticket-export">Save as .txt</button><button class="ghost" id="ticket-clear">Clear fields</button></div><div id="ticket-status-msg" class="toolhint" aria-live="polite">Notes remain in this page until you clear them or close it. No automatic upload.</div></div>
+</section>
+
+<section class="page" id="page-ref" role="tabpanel" aria-labelledby="tab-ref" hidden>
+<div class="card"><h2>Field quick reference</h2>
+<details open><summary>Common analog tone values (CTCSS)</summary><p class="mini">Standard commonly encountered tone set, in Hz. Exact radio support varies.</p><p>67.0 · 69.3 · 71.9 · 74.4 · 77.0 · 79.7 · 82.5 · 85.4 · 88.5 · 91.5 · 94.8 · 97.4 · 100.0 · 103.5 · 107.2 · 110.9 · 114.8 · 118.8 · 123.0 · 127.3 · 131.8 · 136.5 · 141.3 · 146.2 · 151.4 · 156.7 · 159.8 · 162.2 · 165.5 · 167.9 · 171.3 · 173.8 · 177.3 · 179.9 · 183.5 · 186.2 · 189.9 · 192.8 · 196.6 · 199.5 · 203.5 · 206.5 · 210.7 · 218.1 · 225.7 · 229.1 · 233.6 · 241.8 · 250.3 · 254.1</p></details>
+<details><summary>RF math cheatsheet</summary><table><thead><tr><th>Quantity</th><th>Formula</th></tr></thead><tbody><tr><td>Wavelength</td><td>λ(m) ≈ 299.792458 ÷ f(MHz)</td></tr><tr><td>dBm</td><td>10 log₁₀(P in mW)</td></tr><tr><td>Power from dBm</td><td>P(mW) = 10^(dBm / 10)</td></tr><tr><td>Return loss</td><td>RL(dB) = −20 log₁₀((VSWR − 1)/(VSWR + 1))</td></tr><tr><td>Reflected fraction</td><td>((VSWR − 1)/(VSWR + 1))²</td></tr><tr><td>Cable attenuation</td><td>Loss(dB) = spec(dB/100ft) × ft/100 + extras</td></tr><tr><td>EIRP</td><td>P at antenna (dBm) + antenna gain (dBi)</td></tr><tr><td>ERP</td><td>EIRP(dBm) − 2.15 dB</td></tr><tr><td>FSPL</td><td>32.44 + 20log₁₀(f MHz) + 20log₁₀(distance km)</td></tr></tbody></table></details>
+<details><summary>Channel bandwidth and modulation</summary><p>12.5-kHz narrowband-equivalent operation has been required for many Part 90 systems in 150–174 and 421–470 MHz since 2013, with exceptions/waivers. Licensed channel spacing, occupied bandwidth, and radio emission designator are distinct concepts. P25 Phase I is typically 12.5 kHz FDMA; P25 Phase II trunked voice uses two-slot TDMA.</p></details>
+<details><summary>LMR field instruments</summary><ul><li>Digital multimeter and DC clamp meter: source, ground, load current.</li><li>Service monitor: TX power, modulation, receiver sensitivity, BER/SINAD, signaling.</li><li>Directional wattmeter / calibrated power sensor: forward/reflected power.</li><li>VNA/antenna analyzer: VSWR, return loss, feedline fault isolation, sweep.</li><li>Rated dummy load/attenuators: bench RF testing without radiating.</li><li>Spectrum analyzer: interference/intermodulation and spurious signals.</li><li>Network tester / fiber meter: backhaul link validation as needed.</li></ul><p class="fine">Check instrument range, calibration, safe input power, attenuation, and required test configuration before use. Never connect a direct high-power transmitter output to an unprotected analyzer.</p></details>
+<details><summary>End-to-end system troubleshooting order</summary><ol><li>Confirm safety and outage scope with dispatch/control.</li><li>Find comparison device/site/channel and reproduce symptom.</li><li>Subscriber settings and authorized affiliation/access.</li><li>DC power, RF antenna/coax and local interference.</li><li>Repeater RF baseline, duplexer/combiner isolation.</li><li>Network backhaul, control, timing, power/environment.</li><li>Controlled retest and document before/after condition.</li></ol></details>
+</div>
+<div class="card"><h2>Standards and primary references</h2>
+<p class="fine">The normative specifications linked here are identifiers and source references, not a claim of certification. Some standards are copyrighted or paywalled. Links require an internet connection; the built-in tools remain offline.</p>
+<h3>Frequency allocations and radio performance</h3>
+<ul>
+<li><a href="https://www.itu.int/pub/R-REG-RR" target="_blank" rel="noopener noreferrer">ITU Radio Regulations, Article 2, § 2.1</a>: RF band nomenclature; upper-inclusive / lower-exclusive boundaries</li>
+<li><a href="https://www.law.cornell.edu/cfr/text/47/part-90" target="_blank" rel="noopener noreferrer">47 CFR Part 90</a>: land-mobile licensing, assignments and narrowbanding</li>
+<li><a href="https://www.law.cornell.edu/cfr/text/47/part-97" target="_blank" rel="noopener noreferrer">47 CFR Part 97</a> and <a href="https://www.law.cornell.edu/cfr/text/47/97.303" target="_blank" rel="noopener noreferrer">§ 97.303(h)</a>: amateur allocations and revised 60m channels effective 2026-02-13</li>
+<li><a href="https://docs.fcc.gov/public/attachments/FCC-25-60A1.pdf" target="_blank" rel="noopener noreferrer">FCC 25-60 Report and Order (PDF)</a> and <a href="https://www.arrl.org/60-meter-faq" target="_blank" rel="noopener noreferrer">ARRL 60m rules explanation</a></li>
+<li><a href="https://tiaonline.org/standard/tia-603/" target="_blank" rel="noopener noreferrer">TIA-603-E</a>: analog FM/PM LMR equipment measurements, receiver sensitivity and SINAD</li>
+<li><a href="https://www.apcointl.org/technology/interoperability/project-25/" target="_blank" rel="noopener noreferrer">P25 / TIA-102 series</a>: P25 interfaces, air interfaces, signaling and procedures (consult applicable specific part/revision)</li>
+<li><a href="https://www.itu.int/rec/R-REC-P.525/en" target="_blank" rel="noopener noreferrer">ITU-R P.525</a>: free-space attenuation model, basis of FSPL calculation</li>
+<li><a href="https://www.arrl.org/band-plan" target="_blank" rel="noopener noreferrer">ARRL band plan</a>; <a href="https://www.ntia.gov/page/united-states-frequency-allocation-chart" target="_blank" rel="noopener noreferrer">NTIA U.S. frequency allocations</a></li>
+</ul>
+<h3>Installation and site safety</h3>
+<ul>
+<li><a href="https://www.law.cornell.edu/cfr/text/47/1.1310" target="_blank" rel="noopener noreferrer">47 CFR § 1.1310</a> and <a href="https://www.fcc.gov/general/oet-bulletins-line" target="_blank" rel="noopener noreferrer">FCC OET Bulletin 65</a>: occupational and general-population RF exposure evaluation</li>
+<li><a href="https://www.nfpa.org/codes-and-standards/nfpa-70-standard-development/70" target="_blank" rel="noopener noreferrer">NFPA 70 (NEC), Article 310</a>: conductor and ampacity criteria; not computed by the voltage-drop tool</li>
+<li><a href="https://www.motorolasolutions.com/content/dam/msi/docs/federal_standards_terms_and_conditions/communications-site-grounding-and-power-distribution-inspection-sow.pdf" target="_blank" rel="noopener noreferrer">Motorola Solutions R56 site-grounding inspection reference</a>: consult the applicable edition of R56 and local electrical codes</li>
+<li><a href="https://www.osha.gov/communication-towers/" target="_blank" rel="noopener noreferrer">OSHA communications tower safety</a>; <a href="https://www.osha.gov/laws-regs/regulations/standardnumber/1910/1910.147" target="_blank" rel="noopener noreferrer">29 CFR 1910.147 LOTO</a></li>
+<li><a href="https://www.motorolasolutions.com/content/dam/msi/docs/business/products/two-way_radios/portable_radios/_documents/static_files/apx_mobile_o2_o3_o5_o7_and_o9_control_head_installation_manual.pdf" target="_blank" rel="noopener noreferrer">Motorola APX installation manual (legacy model-specific PDF)</a>: verify current replacement manual by radio model; deep link can change</li>
+<li><a href="https://www.cisa.gov/safecom/field-operations-guides" target="_blank" rel="noopener noreferrer">CISA NIFOG / eNIFOG</a>: public-safety interoperability reference</li>
+</ul>
+<h3>Technical basis and display policy</h3>
+<p class="fine">dBm = 10log10(P/1 mW); µV RMS = 10⁶√(P[W]·Z[Ω]); reflection coefficient |Γ| = (VSWR−1)/(VSWR+1); return loss = −20log10|Γ|; line loss in dB adds; EIRP = ERP + 2.15 dB for the ideal dipole reference; free-space attenuation = 32.44 + 20log10(f MHz) + 20log10(d km). DC drop assumes a copper circuit with supply + return; nominal coefficients are approximations. Results are estimates, not tolerance-bearing measurements or test certificates.</p>
+</div>
+<div class="card"><h2>Revision history and verification</h2>
+<table><thead><tr><th>Revision</th><th>Changes</th><th>Review status</th></tr></thead><tbody><tr><td>v2.1.0<br>2026-10-24</td><td>Corrected 60m channel-center window and ITU edges; protected IPv4 parsing; engineering significant figures; copper wire caveats; classification precedence; sorted AWG; CSP and keyboard tabs; FSPL miles; primary-standard references; punctuation cleanup.</td><td>Automated arithmetic, edge-case, keyboard and offline-PWA checks; not a formal safety or regulatory audit</td></tr><tr><td>v2.0<br>2026-10-24</td><td>Original reference calculators and installable PWA shell.</td><td>Initial field-reference release</td></tr></tbody></table>
+<p class="fine">Use a calibrated instrument, measurement uncertainty budget, OEM test limits, local SOPs, and qualified review for acceptance work. Printed values are rounded for readability, not expressions of laboratory traceability.</p>
+</div>
+<div class="card"><h2>Privacy / limitations</h2><p class="fine">Offline-capable PWA with a self-contained application page, a local service worker and app icons. No ads, analytics, third-party assets or accounts required. Hosting serves the application shell; notes stay in your browser until copied or exported. Calculations are engineering estimates, not calibration certificates or engineering signoffs. External reference links may access the internet if opened. This toolkit cannot replace a radio service monitor, antenna analyzer, official channel programming, outage procedures, or formal RF/electrical safety training.</p><div class="actions"><button class="ghost" type="button" id="print-reference">Print reference</button></div></div>
+</section>
+<footer>LMR Field Toolkit · U.S.-focused, offline-first · Keep your authorized agency SOPs and vendor manuals as the controlling references.</footer>
+</main>
+<div class="hubfoot" role="contentinfo"><div class="hubfoot-in"><p>Radio Hub · static pages, offline after first visit, no tracking. Public tower and repeater data only; verify before relying on any listing.</p><p><a href="index.html#privacy">What this site leaves out</a> · <a href="https://github.com/tanks3c/rf-bench-lab/tree/main/hub" target="_blank" rel="noopener">Source</a></p></div></div>
+<script>
+'use strict';
+const $=id=>document.getElementById(id);
+const num=id=>Number($(id).value);
+// Engineering estimates: up to four significant figures, never a count of arbitrary decimal places.
+const nice=x=>Number.isFinite(x)?new Intl.NumberFormat('en-US',{maximumSignificantDigits:4}).format(x):'N/A';
+// Frequencies are input-derived values, not engineering estimates. Preserve their channel precision.
+const freqFmt=(x,places=9)=>Number.isFinite(x)?Number(x.toFixed(places)).toLocaleString('en-US',{maximumFractionDigits:places}):'N/A';
+const countFmt=x=>Number.isFinite(x)?Math.trunc(x).toLocaleString('en-US',{maximumFractionDigits:0}):'N/A';
+const pos=x=>Number.isFinite(x)&&x>0;
+const nonneg=x=>Number.isFinite(x)&&x>=0;
+const out=(id,html)=>$(id).innerHTML=html;
+const log10=x=>Math.log(x)/Math.LN10;
+const dbm=w=>10*log10(w*1000);
+const esc=s=>String(s).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;');
+const ham=[
+[.1357,.1378,'2200 meters','135.7–137.8 kHz'],[.472,.479,'630 meters','472–479 kHz'],[1.8,2,'160 meters','1.8–2 MHz'],[3.5,3.6,'80 meters','3.5–3.6 MHz'],[3.6,4,'75 meters','3.6–4 MHz'],[7,7.3,'40 meters','7–7.3 MHz'],[10.1,10.15,'30 meters','10.1–10.15 MHz'],[14,14.35,'20 meters','14–14.35 MHz'],[18.068,18.168,'17 meters','18.068–18.168 MHz'],[21,21.45,'15 meters','21–21.45 MHz'],[24.89,24.99,'12 meters','24.89–24.99 MHz'],[28,29.7,'10 meters','28–29.7 MHz'],[50,54,'6 meters','50–54 MHz'],[144,148,'2 meters','144–148 MHz'],[219,220,'1.25 meters (restricted)','219–220 MHz'],[222,225,'1.25 meters','222–225 MHz'],[420,450,'70 centimeters','420–450 MHz'],[902,928,'33 centimeters','902–928 MHz'],[1240,1300,'23 centimeters','1240–1300 MHz'],[2300,2310,'13 centimeters','2300–2310 MHz'],[2390,2450,'13 centimeters','2390–2450 MHz'],[5650,5925,'5 centimeters','5.650–5.925 GHz'],[10000,10500,'3 centimeters','10–10.5 GHz'],[24000,24250,'1.2 centimeters','24–24.25 GHz'],[47000,47200,'6 millimeters','47–47.2 GHz'],[76000,81000,'4 millimeters','76–81 GHz'],[122250,123000,'2.5 millimeters','122.25–123 GHz'],[134000,141000,'2 millimeters','134–141 GHz'],[241000,250000,'1 millimeter','241–250 GHz']
+];
+const near=(a,b,t=.000005)=>Math.abs(a-b)<=t;
+function freqMHz(){const raw=$('frequency').value.trim().replaceAll(',','');const m=raw.match(/^(?:\d+(?:\.\d*)?|\.\d+)\s*(Hz|kHz|MHz|GHz)?$/i);if(!m)return NaN;const unit=(m[1]||$('freq-unit').value).toLowerCase();return parseFloat(raw)*({'hz':.000001,'khz':.001,'mhz':1,'ghz':1000}[unit]);}
+// ITU RR Article 2 section 2.1: lower boundary excluded, upper boundary included.
+function category(f){if(f<=.003)return 'Below VLF';if(f<=.03)return 'VLF';if(f<=.3)return 'LF';if(f<=3)return 'MF';if(f<=30)return 'HF';if(f<=300)return 'VHF';if(f<=3000)return 'UHF';if(f<=30000)return 'SHF';if(f<=300000)return 'EHF';return 'Above EHF'}
+function wave(f){let w=299.792458/f;return w>=1000?nice(w/1000)+' km':w>=1?nice(w)+' m':w>=.01?nice(w*100)+' cm':nice(w*1000)+' mm'}
+const exact=[[162.4,'NOAA Weather Radio'],[162.425,'NOAA Weather Radio'],[162.45,'NOAA Weather Radio'],[162.475,'NOAA Weather Radio'],[162.5,'NOAA Weather Radio'],[162.525,'NOAA Weather Radio'],[162.55,'NOAA Weather Radio'],[121.5,'Aviation emergency'],[156.8,'Marine VHF channel 16'],[156.525,'Marine DSC channel 70'],[27.185,'CB channel 19'],[462.5625,'FRS / GMRS channel 1'],[151.82,'MURS channel 1'],[151.88,'MURS channel 2'],[151.94,'MURS channel 3'],[154.57,'MURS channel 4'],[154.6,'MURS channel 5']];
+// Order is intentional: exact service examples, revised 60m, amateur allocations, general neighborhoods.
+const ch60=[5.332,5.348,5.373,5.405]; // FCC Part 97 channel center frequencies, MHz.
+function classify(f){
+const match=exact.find(x=>near(f,x[0]));if(match)return [match[1],freqFmt(match[0],6)+' MHz','Service example','Example channel identification. Transmit privileges depend on the specific service.'];
+if(f>=5.3515&&f<=5.3665)return ['60 meters','5.3515–5.3665 MHz U.S. segment','Amateur','Up to 9.15 W ERP, with 2.8 kHz maximum occupied bandwidth. Check FCC Part 97 § 97.303.'];
+const channel=ch60.find(v=>Math.abs(f-v)<=.0014+1e-12);
+if(channel!==undefined)return ['60 meters','Channel center '+freqFmt(channel*1000,1)+' kHz ±1.4 kHz','Amateur','Up to 100 W ERP, emissions ≤ 2.8 kHz. USB carrier dial is center − 1.5 kHz; CW is set to center. Use Part 97 rules for modes and actual emission placement.'];
+const usbCarrier=[5.3305,5.3465,5.3715,5.4035].find(v=>near(f,v,.0000005));
+if(usbCarrier!==undefined)return ['60 meters','USB carrier '+freqFmt(usbCarrier*1000,1)+' kHz; channel center '+freqFmt((usbCarrier+.0015)*1000,1)+' kHz','Amateur','This is the FCC-specified suppressed-carrier dial setting for an allowed 60m channel. The 2.8 kHz occupied emission is centered 1.5 kHz above it; verify mode and power constraints.'];
+const h=ham.find(x=>f>=x[0]&&f<=x[1]);if(h)return [h[2],h[3],'Amateur',near(f,146.52)?'U.S. 2m FM simplex calling frequency.':near(f,446)?'Common U.S. 70cm FM simplex calling frequency.':f>=219&&f<=220?'Limited-use segment, not ordinary FM voice permission.':f>=3.6&&f<=4?'75m is commonly referred to as part of the 80m band family.':'License class, modes, regional restrictions and band edges still apply.'];
+const areas=[[30,50,'VHF low-band land-mobile neighborhood','30–50 MHz'],[150,174,'VHF high-band land-mobile neighborhood','150–174 MHz'],[450,470,'UHF land-mobile neighborhood','450–470 MHz'],[470,512,'UHF T-band / shared uses','470–512 MHz (region dependent)'],[769,775,'700 MHz public safety narrowband','769–775 MHz'],[799,805,'700 MHz public safety narrowband','799–805 MHz'],[806,824,'800 MHz land-mobile neighborhood','806–824 MHz'],[851,869,'800 MHz land-mobile neighborhood','851–869 MHz'],[896,901,'900 MHz land-mobile neighborhood','896–901 MHz'],[935,940,'900 MHz land-mobile neighborhood','935–940 MHz'],[118,137,'VHF aviation voice neighborhood','118–137 MHz'],[26.965,27.405,'Citizens Band neighborhood','26.965–27.405 MHz']];
+const a=areas.find(x=>f>=x[0]&&f<=x[1]);return a?[a[2],a[3],'Spectrum neighborhood','General allocation area, not an assigned channel, license verification, or proof of permitted use.']:['No reference match','Check license / official allocations','Unclassified','Many services and channels are not included. Check official frequency allocation and assignment records.'];
+}
+let bandCopy='';
+function renderBand(){let f=freqMHz();if(!pos(f)){for(const id of ['freq-rf','freq-wave','freq-mhz','freq-khz'])$(id).textContent=' - ';$('freq-name').textContent='Enter a valid frequency';$('freq-range').textContent='e.g. 146.520 MHz';$('freq-kind').textContent='Invalid';$('freq-kind').classList.add('alt');$('freq-note').textContent='Use a positive value and optionally Hz, kHz, MHz, or GHz.';bandCopy='';return;}
+const [name,range,kind,note]=classify(f);$('freq-name').textContent=name;$('freq-range').textContent=range;$('freq-kind').textContent=kind;$('freq-kind').classList.toggle('alt',kind!=='Amateur');$('freq-rf').textContent=category(f);$('freq-wave').textContent=wave(f);$('freq-mhz').textContent=freqFmt(f,9)+' MHz';$('freq-khz').textContent=freqFmt(f*1000,6)+' kHz';$('freq-note').textContent=note;bandCopy=freqFmt(f,9)+' MHz → '+name+' | '+category(f)+' | '+range+' | λ '+wave(f)+' | '+note;}
+function calcPower(){let x=num('pow-num');let u=$('pow-unit').value;let w=u==='W'?x:u==='mW'?x/1000:Math.pow(10,x/10)/1000;if(!pos(w)||!Number.isFinite(w)){out('pow-out','Enter a valid power (watts/milliwatts must be > 0).');return;}out('pow-out',`<strong>${nice(w,9)} W</strong> · ${nice(w*1000,6)} mW · <strong>${nice(dbm(w),3)} dBm</strong>`)}
+function calcRX(){let x=num('rx-value'),z=num('rx-imp'),u=$('rx-unit').value;if(!Number.isFinite(x)||(u==='µV RMS'&&!pos(x))){out('rx-out','Enter a valid signal level; microvolts must be greater than zero.');return;}let w=u==='dBm'?Math.pow(10,x/10)/1000:(x*1e-6)**2/z;if(!pos(w)||!Number.isFinite(w)){out('rx-out','Signal level outside calculable range.');return;}let uv=Math.sqrt(w*z)*1e6;out('rx-out',`Level: <strong>${nice(dbm(w),3)} dBm</strong><br>Loaded RMS signal: <strong>${nice(uv,5)} µV</strong> (${nice(uv*1000,3)} nV)`)}
+function ipOctets(raw){let bits=raw.trim().split('.');if(bits.length!==4||bits.some(x=>!/^(?:0|[1-9]\d{0,2})$/.test(x)||Number(x)>255))return null;return bits.map(Number)}
+function ipLong(parts){return ((parts[0]*0x1000000)+(parts[1]<<16)+(parts[2]<<8)+parts[3])>>>0}
+function longIP(x){return [x>>>24,(x>>>16)&255,(x>>>8)&255,x&255].join('.')}
+function calcIP(){let parts=ipOctets($('ip-address').value),p=num('ip-prefix');if(!parts||!Number.isInteger(p)||p<0||p>32){out('ip-out','Enter a valid IPv4 address and prefix /0–/32.');return;}let mask=p===0?0:(0xffffffff<<(32-p))>>>0,base=(ipLong(parts)&mask)>>>0,bcast=(base|(~mask>>>0))>>>0,total=2**(32-p);let hosts=p<=30?Math.max(0,total-2):p===31?'2 addresses (point-to-point /31)':'1 address (host /32)';let usable=p<=30?longIP(base+1)+' – '+longIP(bcast-1):p===31?'Use /31 point-to-point semantics':'Single-host route';out('ip-out',`Subnet mask: <strong>${longIP(mask)}</strong><br>Network: <strong>${longIP(base)}/${p}</strong><br>Broadcast / last address: ${longIP(bcast)}<br>Address count: ${countFmt(total)} · Conventional usable hosts: <strong>${hosts}</strong><br>Usable address range: ${usable}`)}
+function calcVS(){let p=num('vs-fwd'),v=num('vs-swr');if(!nonneg(p)||!Number.isFinite(v)||v<1){out('vs-out','Forward power must be ≥ 0 and VSWR must be ≥ 1.');return;}let gamma=(v-1)/(v+1),refl=gamma*gamma;out('vs-out',`<strong>${nice(p*refl,4)} W reflected</strong> · ${nice(refl*100,3)}% reflected<br>Return loss: <strong>${v===1?'∞':nice(-20*log10(gamma),2)+' dB'}</strong> · Mismatch loss: ${nice(-10*log10(1-refl),3)} dB<br>Net delivered (at measurement plane): ${nice(p*(1-refl),3)} W`)}
+function calcFeed(){let p=num('feed-p'),l=num('feed-l100'),ft=num('feed-ft'),e=num('feed-extra'),g=num('feed-gain');if(!pos(p)||![l,ft,e,g].every(Number.isFinite)||![l,ft,e].every(nonneg)){out('feed-out','Enter valid input power (> 0), nonnegative line losses, cable length, and antenna gain.');return;}let loss=l*ft/100+e,del=p*Math.pow(10,-loss/10),eirp=del*Math.pow(10,g/10),erp=eirp/Math.pow(10,2.15/10);out('feed-out',`Combined line loss: <strong>${nice(loss,3)} dB</strong><br>At antenna: <strong>${nice(del,3)} W</strong> (${nice(dbm(del),2)} dBm)<br>EIRP: <strong>${nice(eirp,3)} W</strong> · ERP: <strong>${nice(erp,3)} W</strong>`)}
+function calcAntenna(){let f=num('ant-mhz'),k=num('ant-factor'),vf=num('ant-vf');if(!pos(f)||!pos(k)||k>1||!pos(vf)||vf>1){out('ant-out','Enter a positive frequency and factors in (0, 1].');return;}let l=299.792458/f;out('ant-out',`Free-space wavelength: <strong>${nice(l,4)} m</strong><br>¼-wave physical starting point: <strong>${nice(l*0.25*k*100,2)} cm</strong> (${nice(l*.25*k/0.0254,2)} in)<br>½-wave physical starting point: ${nice(l*.5*k*100,2)} cm<br>¼-wave electrical coax length (VF): <strong>${nice(l*.25*vf*100,2)} cm</strong>`)}
+const awg={'4':.2485,'6':.3951,'8':.6282,'10':.9989,'12':1.588,'14':2.525,'16':4.016,'18':6.385};
+function calcDC(){let v=num('dc-v'),a=num('dc-a'),ft=num('dc-ft'),r=awg[$('dc-awg').value];if(!pos(v)||!nonneg(a)||!nonneg(ft)){out('dc-out','Enter positive supply voltage and nonnegative current and one-way length.');return;}let ohm=r*2*ft/1000,drop=ohm*a;out('dc-out',`Estimated round-trip resistance: ${nice(ohm,4)} Ω<br>Voltage drop: <strong>${nice(drop,3)} V</strong> (${nice(drop/v*100,2)}%)<br>At equipment: <strong>${nice(v-drop,3)} V</strong> · Cable heat loss: ${nice(drop*a,2)} W${drop>=v?'<br><span class="warning-text">Estimated drop exceeds input voltage: check assumptions.</span>':''}`)}
+function calcBat(){let ah=num('bat-ah'),util=num('bat-util'),idle=num('bat-idle'),tx=num('bat-tx'),duty=num('bat-duty');if(!pos(ah)||!pos(util)||util>100||!nonneg(idle)||!nonneg(tx)||!nonneg(duty)||duty>100){out('bat-out','Enter valid capacities, currents and percentages.');return;}let avg=idle*(1-duty/100)+tx*duty/100;if(!pos(avg)){out('bat-out','Average current cannot be zero.');return;}out('bat-out',`Average load: <strong>${nice(avg,3)} A</strong><br>Usable capacity: ${nice(ah*util/100,2)} Ah<br>Estimated autonomy: <strong>${nice(ah*util/100/avg,2)} hours</strong>`)}
+function calcRPT(){let rxo=num('rpt-out'),txi=num('rpt-in');if(!pos(rxo)||!pos(txi)){out('rpt-result','Enter valid output and input frequencies.');return;}let off=txi-rxo;out('rpt-result',`Subscriber RX: <strong>${freqFmt(rxo,6)} MHz</strong> · Subscriber TX: <strong>${freqFmt(txi,6)} MHz</strong><br>TX offset: <strong>${off>=0?'+':'−'}${freqFmt(Math.abs(off),6)} MHz</strong> (${freqFmt(Math.abs(off)*1000,3)} kHz)${near(off,0)?' · simplex/same frequency':''}`)}
+function calcNAC(){let raw=$('nac-input').value.trim().replace(/^(?:0x|\$)/i,'');if(!/^[\da-f]{1,3}$/i.test(raw)){out('nac-out','Enter 1–3 hexadecimal characters, e.g. 293, $293 or 0x293.');return;}let n=parseInt(raw,16);out('nac-out',`Hex: <strong>0x${n.toString(16).toUpperCase().padStart(3,'0')}</strong> · Decimal: <strong>${n}</strong> · Binary: ${n.toString(2).padStart(12,'0')}`)}
+function calcFSPL(){let f=num('fspl-mhz'),distance=num('fspl-dist'),unit=$('fspl-unit').value;if(!pos(f)||!pos(distance)){out('fspl-out','Frequency and distance must be positive.');return;}let km=unit==='mi'?distance*1.609344:distance;out('fspl-out',`Ideal free-space path loss: <strong>${nice(32.44+20*log10(f)+20*log10(km))} dB</strong><br>Distance: ${nice(distance)} ${unit} (${nice(km)} km)`)}
+const calcInputs={pow:['pow-num','pow-unit'],rx:['rx-value','rx-unit','rx-imp'],ip:['ip-address','ip-prefix'],vs:['vs-fwd','vs-swr'],feed:['feed-p','feed-l100','feed-ft','feed-extra','feed-gain'],ant:['ant-mhz','ant-factor','ant-vf'],dc:['dc-v','dc-a','dc-ft','dc-awg'],bat:['bat-ah','bat-util','bat-idle','bat-tx','bat-duty'],rpt:['rpt-out','rpt-in'],nac:['nac-input'],fspl:['fspl-mhz','fspl-dist','fspl-unit']};
+const funcs={pow:calcPower,rx:calcRX,ip:calcIP,vs:calcVS,feed:calcFeed,ant:calcAntenna,dc:calcDC,bat:calcBat,rpt:calcRPT,nac:calcNAC,fspl:calcFSPL};
+Object.entries(calcInputs).forEach(([kind,ids])=>ids.forEach(id=>{const el=$(id);el.addEventListener('input',funcs[kind]);el.addEventListener('change',funcs[kind]);}));
+Object.values(funcs).forEach(fn=>fn());
+$('frequency').addEventListener('input',renderBand);$('freq-unit').addEventListener('change',renderBand);
+$('freq-presets').addEventListener('click',e=>{let b=e.target.closest('button[data-f]');if(b){$('frequency').value=b.dataset.f;$('freq-unit').value='MHz';renderBand();}});
+async function copyText(str){try{if(navigator.clipboard&&window.isSecureContext){await navigator.clipboard.writeText(str);return true;}}catch(e){}let ta=document.createElement('textarea');ta.value=str;ta.style.position='fixed';ta.style.opacity='0';document.body.appendChild(ta);ta.focus();ta.select();let ok=false;try{ok=document.execCommand('copy')}catch(e){}ta.remove();return ok;}
+function blink(btn,yes){let old=btn.textContent;btn.textContent=yes?'Copied':'Copy manually';setTimeout(()=>btn.textContent=old,1800)}
+$('freq-copy').addEventListener('click',async e=>blink(e.currentTarget,await copyText(bandCopy)));
+renderBand();
+function showTab(tab,scroll=false){if(!$("page-"+tab))tab='band';document.querySelectorAll('.tab').forEach(b=>{let selected=b.dataset.tab===tab;b.setAttribute('aria-selected',selected?'true':'false');b.tabIndex=selected?0:-1});document.querySelectorAll('.page').forEach(p=>p.hidden=p.id!=='page-'+tab);if(scroll)window.scrollTo({top:0,behavior:'instant'});}
+const tabButtons=Array.from(document.querySelectorAll('[role="tab"]'));
+function activateTab(button,scroll=true){showTab(button.dataset.tab,scroll);try{history.replaceState(null,'','#'+button.dataset.tab)}catch(e){}}
+tabButtons.forEach((button,index)=>{
+  button.addEventListener('click',()=>activateTab(button,true));
+  button.addEventListener('keydown',e=>{
+    let target;
+    if(e.key==='ArrowRight')target=(index+1)%tabButtons.length;
+    else if(e.key==='ArrowLeft')target=(index-1+tabButtons.length)%tabButtons.length;
+    else if(e.key==='Home')target=0;
+    else if(e.key==='End')target=tabButtons.length-1;
+    else return;
+    e.preventDefault();tabButtons[target].focus();activateTab(tabButtons[target],false);
+  });
+});
+showTab(location.hash.slice(1)||'band');
+window.addEventListener('hashchange',()=>showTab(location.hash.slice(1)||'band'));
+$('print-reference').addEventListener('click',()=>window.print());
+function progress(group){const arr=Array.from(document.querySelectorAll(`[data-checklist="${group}"] input[type=checkbox]`));const done=arr.filter(x=>x.checked).length;$('progress-'+group).style.width=(100*done/arr.length)+'%';$('label-'+group).textContent=done+'/'+arr.length+' complete';}
+['install','site'].forEach(group=>{document.querySelectorAll(`[data-checklist="${group}"] input`).forEach(cb=>cb.addEventListener('change',()=>progress(group)));progress(group)});
+document.querySelectorAll('[data-reset]').forEach(b=>b.addEventListener('click',()=>{let group=b.dataset.reset;document.querySelectorAll(`[data-checklist="${group}"] input`).forEach(c=>c.checked=false);progress(group)}));
+document.querySelectorAll('[data-copycheck]').forEach(b=>b.addEventListener('click',async()=>{let group=b.dataset.copycheck;let lines=Array.from(document.querySelectorAll(`[data-checklist="${group}"] .checkrow`)).filter(r=>r.querySelector('input').checked).map(r=>'✓ '+r.querySelector('label').textContent.trim());let result=await copyText((group==='site'?'Site / Infra':'Mobile install')+' checklist completed items:\n'+(lines.join('\n')||'(none checked)'));blink(b,result)}));
+const diagnostic={
+'no-power':{title:'Isolate battery / feed / radio',steps:['Confirm safety and compare with known-good equipment; inspect physical power switch, ignition sense, fuse, and accessory interlock.','Measure DC at the radio under actual load; check positive and return path for voltage drop and loose/crimped connections.','If correct supply and permitted, inspect harness/control head and follow model-specific service procedure.'],escalate:'Escalate abnormal current, damaged wiring, repeated fuse failure, or suspect radio internal fault.'},
+'can-hear':{title:'Confirm PTT → signaling → RF path',steps:['Determine whether PTT keys and RF power appears on an approved instrument; verify selected zone/channel/site.','Check authorized TX frequency, NAC/PL/DPL, talkgroup/affiliation, lockouts, and configured transmit inhibit.','Compare with known-good subscriber. If RF is present, check coax/antenna and repeater input path.'],escalate:'Do not defeat TX inhibit or change permissions without authorization.'},
+'tx-no-rx':{title:'Start at audio and squelch',steps:['Verify volume, accessory/remote-speaker configuration, selected zone, mode, and battery.','Test with known-good transmissions; check PL/DPL/NAC/TG match and expected receive frequency.','Measure receiver sensitivity if approved; investigate desense, antenna/feedline loss, or system site coverage.'],escalate:'Do not transmit on an unverified channel just to probe the system.'},
+'short-range':{title:'Separate subscriber from coverage',steps:['Compare known-good radio at same position and time; note building, terrain, vehicle, and portable antenna changes.','Inspect antenna, connector and coax; measure return loss, forward power, and RX sensitivity using suitable rated equipment.','If multiple users affected, check site TX power, receiver performance, feeder condition, and co-channel interference.'],escalate:'Record location pattern before concluding tower failure.'},
+'distorted':{title:'Determine analog, digital or audio issue',steps:['Confirm whether distortion is one subscriber or widespread, and whether it follows the accessory/microphone.','Check battery and load voltage, speaker/mic wiring, modulation or digital BER, nearby interference, and desense.','Compare direct/simplex vs repeated/trunked path only where authorized; check backhaul jitter/packet loss if voice is IP-carried.'],escalate:'Do not alter encryption/security settings as a diagnostic shortcut.'},
+'busy':{title:'Verify actual carrier and repeater state',steps:['Identify valid traffic vs squelch/tone mismatch; compare control-center and field reports.','Check stuck PTT/accessory or unintended keying, carrier interference and repeater alarms on authorized monitors.','If site side, inspect repeater controller state, receiver desense, duplexer isolation, and event logs.'],escalate:'Coordinate any transmitter disable or restart with dispatch/change control.'},
+'affiliation':{title:'Control-channel vs traffic-channel path',steps:['Verify coverage and correct system/site/zone; determine whether affiliation succeeds.','Confirm radio authorization, talkgroup selection, profile, key status where applicable, and system status through approved admin tools.','Distinguish control channel strength from traffic channel performance; assess site alarms, backhaul, controller or RF resource issues.'],escalate:'Treat missing/incorrect cryptographic material as security workflow, not ad hoc key changes.'},
+'site-offline':{title:'Power → backhaul → controller → RF',steps:['Coordinate dispatch/NOC, determine site vs network-wide scope and inspect alarm timeline.','Check safe-access power/UPS/DC supply/generator/ATS/HVAC alarms; verify network links, routes and timing references.','Inspect controller/repeater state and RF path baseline only under approved outage and safety procedures.'],escalate:'Avoid uncontrolled reboot or RF shutdown of public-safety service.'},
+'dead-zone':{title:'Document pattern and compare radios',steps:['Map coverage complaint qualitatively: site, location, time, building/vehicle, portable antenna, and whether uplink/downlink differs.','Compare known-good radios and signal/BER readings, account for nearby obstructions and changing noise/interference.','Review site fault alarms, antennas, overlap/simulcast timing, terrain and in-building solutions with RF engineer.'],escalate:'Coverage changes or antenna tuning require authorized engineering review.'},
+'vehicle':{title:'Load, ground and vehicle RFI',steps:['Reproduce with ignition off/on, during engine RPM changes, accessories/lights/HVAC on/off; document conditions.','Check radio load voltage, fused positive feed, chassis ground, harness routing, and accessory interference.','Check antenna/mount feedline and compare portable vs mobile equipment. Use approved electrical/RFI procedures.'],escalate:'Do not modify OEM safety wiring or disable vehicle control modules.'}
+};
+function renderDiag(){const obj=diagnostic[$('symptom').value];out('diag-result','<strong>'+esc(obj.title)+'</strong><ol>'+obj.steps.map(x=>'<li>'+esc(x)+'</li>').join('')+'</ol><span class="warning-text">'+esc(obj.escalate)+'</span>')};
+$('symptom').addEventListener('change',renderDiag);renderDiag();
+const tfields=['ticket-type','ticket-asset','ticket-issue','ticket-scope','ticket-tests','ticket-fix','ticket-status','ticket-next'];
+function ticketText(){return ['LMR FIELD SERVICE NOTE','Recorded (local): '+new Date().toLocaleString(),'Work type: '+$('ticket-type').value,'Asset / WO: '+$('ticket-asset').value.trim(),'Reported symptom: '+$('ticket-issue').value.trim(),'Scope / conditions: '+$('ticket-scope').value.trim(),'Tests / readings: '+$('ticket-tests').value.trim(),'Findings / actions: '+$('ticket-fix').value.trim(),'Disposition: '+$('ticket-status').value,'Next action / owner: '+$('ticket-next').value.trim()].join('\n');}
+$('ticket-copy').addEventListener('click',async e=>{let ok=await copyText(ticketText());$('ticket-status-msg').textContent=ok?'Copied. Paste into approved ticketing system.':'Clipboard was blocked; use Save as .txt instead.';blink(e.currentTarget,ok)});
+$('ticket-clear').addEventListener('click',()=>{for(let id of tfields){let el=$(id);if(el.tagName==='SELECT')el.selectedIndex=0;else el.value='';}$('ticket-status-msg').textContent='Fields cleared.'});
+$('ticket-export').addEventListener('click',()=>{let blob=new Blob([ticketText()+'\n'],{type:'text/plain;charset=utf-8'});let url=URL.createObjectURL(blob);let a=document.createElement('a');a.href=url;a.download='LMR_field_note_'+new Date().toISOString().slice(0,10)+'.txt';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),2000);$('ticket-status-msg').textContent='File save requested. Store only in an approved location.'});
+</script>
+<script>
+// Installation is handled entirely by Chrome. The application never sends field notes to a server.
+if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
+  window.addEventListener('load', () => navigator.serviceWorker.register('../sw.js').catch(() => {}));
+}
+let pendingInstall = null;
+const installPanel = document.getElementById('install-panel');
+window.addEventListener('beforeinstallprompt', event => {
+  event.preventDefault();
+  pendingInstall = event;
+  installPanel.hidden = false;
+});
+document.getElementById('install-app').addEventListener('click', async () => {
+  if (!pendingInstall) return;
+  pendingInstall.prompt();
+  try { await pendingInstall.userChoice; } catch(e) {}
+  pendingInstall = null;
+  installPanel.hidden = true;
+});
+window.addEventListener('appinstalled', () => {
+  pendingInstall = null;
+  installPanel.hidden = true;
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,830 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#08111b">
+<meta name="description" content="Meshtastic Operations and Maintenance Course: six blocks from mesh operator to MQTT gateway maintainer, with checklists and a knowledge check.">
+<title>Meshtastic O&amp;M Course · Radio Hub</title>
+<link rel="stylesheet" href="assets/hub-base.css">
+<link rel="stylesheet" href="assets/hub.css">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon-192.png" type="image/png" sizes="192x192">
+<link rel="apple-touch-icon" href="icons/icon-180.png">
+<style>
+.course{display:grid;grid-template-columns:240px minmax(0,1fr);gap:26px;align-items:start}
+@media (max-width:900px){.course{grid-template-columns:minmax(0,1fr)}}
+.toc{position:sticky;top:12px;max-height:calc(100vh - 24px);overflow:auto;font-size:13.5px;border:1px solid var(--h-line);border-radius:12px;background:var(--h-sunk);padding:12px 12px 6px}
+@media (max-width:900px){.toc{position:static;max-height:none}}
+.toc summary{cursor:pointer;font-weight:800;font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--h-muted);padding:2px 0 8px}
+.toc ol{list-style:none;padding:0;margin:0 0 6px}
+.toc li{margin:0}
+.toc a{display:block;color:#cfe1ed;text-decoration:none;padding:5px 8px;border-radius:7px}
+.toc a:hover{background:var(--h-panel);color:var(--h-fg)}
+.toc .blk > a{font-weight:750;color:var(--h-fg)}
+.toc .sub a{padding-left:20px;color:var(--h-muted);font-size:13px}
+.content{display:grid;gap:16px;min-width:0}
+.content > section{scroll-margin-top:12px}
+.block{border-top:3px solid var(--h-violet)}
+.blockhead{display:flex;flex-wrap:wrap;gap:6px 14px;align-items:baseline;margin-bottom:6px}
+.blockhead .roman{font-family:var(--h-mono);font-size:13px;color:var(--h-violet);font-weight:700}
+.blockhead h2{margin:0;font-size:24px}
+.mod{border-top:1px dashed var(--h-line);padding-top:14px;margin-top:16px;scroll-margin-top:12px}
+.mod:first-of-type{border-top:0;padding-top:0}
+.mod h3{margin-top:0;display:flex;gap:10px;align-items:baseline;flex-wrap:wrap}
+.mod h3 .n{font-family:var(--h-mono);font-size:12px;color:var(--h-muted);font-weight:600;border:1px solid var(--h-line);border-radius:6px;padding:1px 6px}
+.obj{color:var(--h-mint);font-size:14px;margin:0 0 8px}
+.obj::before{content:"Objective: ";font-weight:800}
+.qual{border:1px solid #4d7a6c;background:#122e2a;color:#c8f3e2;border-radius:10px;padding:10px 13px;margin:12px 0;font-size:14px}
+.qual b{color:#e5fff4}
+.rule{font-weight:800;color:var(--h-fg)}
+.path{font-family:var(--h-mono);font-size:13px;background:var(--h-sunk);border:1px solid var(--h-line);border-radius:8px;padding:8px 11px;margin:8px 0;overflow-x:auto;white-space:nowrap}
+.kv{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,190px),1fr));gap:1px;background:var(--h-line);border:1px solid var(--h-line);border-radius:10px;overflow:hidden;margin:10px 0}
+.kv div{background:var(--h-sunk);padding:8px 11px;min-width:0}
+.kv dt{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--h-muted);margin:0}
+.kv dd{margin:2px 0 0;font-family:var(--h-mono);font-size:14px;overflow-wrap:anywhere}
+dl.kv{margin:10px 0}
+.cols2{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:12px}
+.matrix h3{font-size:15px;margin:0 0 4px}
+.copied{font-size:12.5px;color:var(--h-mint);margin-left:4px}
+.checkhead{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:8px}
+.checkhead h3,.checkhead h4{margin:0}
+</style>
+</head>
+<body>
+<div class="hubbar"><div class="hubbar-in"><a class="hub-brand" href="index.html"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 10.5 8.6 21.5M12 10.5l3.4 11M9.6 18h4.8"/><circle cx="12" cy="8.6" r="1.7" fill="currentColor" stroke="none"/><path d="M8.6 5.4a4.8 4.8 0 0 0 0 6.4M15.4 5.4a4.8 4.8 0 0 1 0 6.4M5.8 2.8a8.6 8.6 0 0 0 0 11.6M18.2 2.8a8.6 8.6 0 0 1 0 11.6"/></svg><span>Radio Hub</span></a><nav class="hubnav" aria-label="Radio Hub sections"><a href="index.html">Home</a><a href="../index.html">RF Bench Lab</a><a href="lmr-toolkit.html">LMR Toolkit</a><a href="meshtastic.html" aria-current="page">Meshtastic</a><a href="maps.html">Area maps</a><a href="inventory.html">County inventory</a></nav></div></div>
+<main class="wrap">
+  <div class="pagehead">
+    <div>
+      <p class="eyebrow">Operator qualification course · US / Florida Mesh</p>
+      <h1>Meshtastic Operations &amp; Maintenance</h1>
+      <p class="lede">From beginner operator to independent device maintainer to MQTT gateway operator. Plan on 12 to 18 hours of study and hands-on work. Use it in order the first time, then as your SOP.</p>
+    </div>
+    <div class="actions">
+      <a class="btn" href="https://client.meshtastic.org" target="_blank" rel="noopener">Meshtastic web client ↗</a>
+      <a class="btn ghost" href="https://meshtastic.org/docs" target="_blank" rel="noopener">Official docs ↗</a>
+    </div>
+  </div>
+
+  <div class="course">
+    <nav class="toc" aria-label="Course contents">
+      <details open id="tocdetails"><summary>Contents</summary>
+      <ol>
+        <li class="blk"><a href="#overview">Mission and example node</a></li>
+        <li class="blk"><a href="#b1">I. Mesh operator</a></li>
+        <li class="sub"><a href="#m1">1 What Meshtastic is</a></li>
+        <li class="sub"><a href="#m2">2 Channels</a></li>
+        <li class="sub"><a href="#m3">3 Florida Mesh channels</a></li>
+        <li class="sub"><a href="#m4">4 Messages, ACKs, tapbacks</a></li>
+        <li class="sub"><a href="#m5">5 Device roles</a></li>
+        <li class="blk"><a href="#b2">II. Radio operator</a></li>
+        <li class="sub"><a href="#m6">6 Region, preset, hops</a></li>
+        <li class="sub"><a href="#m7">7 RF and antennas</a></li>
+        <li class="sub"><a href="#m8">8 RSSI, SNR, noise</a></li>
+        <li class="blk"><a href="#b3">III. MQTT gateway operator</a></li>
+        <li class="sub"><a href="#m9">9 What MQTT changes</a></li>
+        <li class="sub"><a href="#m10">10 Uplink vs downlink</a></li>
+        <li class="sub"><a href="#m11">11 Reading MQTT in a log</a></li>
+        <li class="sub"><a href="#m12">12 MQTT test method</a></li>
+        <li class="sub"><a href="#m13">13 Florida Mesh MQTT</a></li>
+        <li class="blk"><a href="#b4">IV. Device maintenance</a></li>
+        <li class="sub"><a href="#m14">14 Firmware</a></li>
+        <li class="sub"><a href="#m15">15 Reading a log</a></li>
+        <li class="sub"><a href="#m16">16 Normal log events</a></li>
+        <li class="sub"><a href="#m17">17 Items to monitor</a></li>
+        <li class="sub"><a href="#m18">18 Critical faults</a></li>
+        <li class="blk"><a href="#b5">V. Operating procedures</a></li>
+        <li class="sub"><a href="#m19">19 Pre-operation checklist</a></li>
+        <li class="sub"><a href="#m20">20 Mobile SOP</a></li>
+        <li class="sub"><a href="#m21">21 Static / home SOP</a></li>
+        <li class="sub"><a href="#m22">22 Troubleshooting</a></li>
+        <li class="sub"><a href="#m23">23 Traceroute</a></li>
+        <li class="sub"><a href="#m24">24 Weekly mesh net</a></li>
+        <li class="blk"><a href="#b6">VI. Maintenance program</a></li>
+        <li class="blk"><a href="#security">Logs and credentials</a></li>
+        <li class="blk"><a href="#matrix">Decision matrix</a></li>
+        <li class="blk"><a href="#exam">Final practical exam</a></li>
+        <li class="blk"><a href="#knowledge">Knowledge check</a></li>
+        <li class="blk"><a href="#standard">Qualification standard</a></li>
+        <li class="blk"><a href="#sources">Sources</a></li>
+      </ol>
+      </details>
+    </nav>
+
+    <div class="content">
+
+<section class="card" id="overview">
+  <h2>Course mission</h2>
+  <p>By the end of this course you should be able to:</p>
+  <div class="cols2">
+    <ul>
+      <li>Explain how a Meshtastic mesh works.</li>
+      <li>Configure a node without changing settings blindly.</li>
+      <li>Select the correct device role.</li>
+      <li>Understand primary and secondary channels.</li>
+      <li>Send broadcasts and direct messages appropriately.</li>
+      <li>Interpret acknowledgements and failed transmissions.</li>
+      <li>Monitor the mesh without adding needless airtime.</li>
+      <li>Operate on the Florida Mesh using its regional conventions.</li>
+      <li>Understand LoRa presets, frequency slots, hop limits, and airtime.</li>
+    </ul>
+    <ul>
+      <li>Recognize basic RF and antenna problems.</li>
+      <li>Configure and verify MQTT.</li>
+      <li>Tell RF traffic from MQTT traffic.</li>
+      <li>Use logs to see what the device is actually doing.</li>
+      <li>Separate normal warnings from faults that need action.</li>
+      <li>Back up configuration and update firmware safely.</li>
+      <li>Maintain a mobile, stationary, or gateway node.</li>
+      <li>Troubleshoot systematically instead of changing settings at random.</li>
+    </ul>
+  </div>
+  <h3 id="example-node">Example training node</h3>
+  <p>The course uses one real debug capture as its running example. Node ID, credentials, and location are left out.</p>
+  <dl class="kv">
+    <div><dt>Hardware</dt><dd>Heltec V3</dd></div>
+    <div><dt>Platform</dt><dd>ESP32-S3</dd></div>
+    <div><dt>Firmware</dt><dd>2.7.26</dd></div>
+    <div><dt>Region</dt><dd>US</dd></div>
+    <div><dt>LoRa frequency</dt><dd>906.875 MHz</dd></div>
+    <div><dt>Hop limit</dt><dd>3</dd></div>
+    <div><dt>NodeDB</dt><dd>about 200 nodes</dd></div>
+    <div><dt>Wi-Fi</dt><dd>on for parts of the capture</dd></div>
+    <div><dt>MQTT</dt><dd>connected to Florida Mesh</dd></div>
+    <div><dt>GPS</dt><dd>none onboard</dd></div>
+    <div><dt>Telemetry</dt><dd>active</dd></div>
+    <div><dt>Power</dt><dd>USB for most of the capture</dd></div>
+  </dl>
+  <p class="fine">906.875 MHz is the default North American LongFast frequency. Florida Mesh uses LongFast for most of the state and MediumFast in designated parts of the southeast coast.</p>
+</section>
+
+<section class="card block" id="b1">
+  <div class="blockhead"><span class="roman">BLOCK I</span><h2>Mesh operator</h2></div>
+
+  <div class="mod" id="m1">
+    <h3><span class="n">M1</span>What Meshtastic actually is</h3>
+    <p class="obj">Understand what the radio is doing before learning the app.</p>
+    <h4>Node</h4>
+    <p>A node is one Meshtastic radio on the network. The Heltec V3 is a node. A node can transmit, receive, and relay packets, talk to a phone or computer, keep a database of other nodes, and optionally bridge traffic to MQTT.</p>
+    <h4>Mesh</h4>
+    <p>Nodes relay for each other, so you do not need a direct radio path to every destination. The hop limit caps how many relays a packet may take.</p>
+    <div class="path">Your node → another node → another node → destination</div>
+    <h4>LoRa</h4>
+    <p>LoRa is the long-range RF method that carries Meshtastic packets. Meshtastic is not cellular, normal Wi-Fi messaging, Bluetooth messaging, or MQTT. Bluetooth and Wi-Fi connect clients and services to the node. <span class="rule">LoRa is what connects the radio mesh.</span></p>
+    <h4>Packet</h4>
+    <p>The formatted unit moving through the network. It can carry text, node info, position, telemetry, routing data, or acknowledgements.</p>
+    <h4>Broadcast vs direct message</h4>
+    <p>A broadcast is for the whole channel. A direct message targets one node. A broadcast acknowledgement does not confirm that a specific person read your message.</p>
+    <div class="callout">
+      <div class="checkhead"><p class="label">Practical exercise 1</p></div>
+      <div class="checklist" data-checklist="ex1">
+        <div class="checkrow"><input type="checkbox" id="ex1-1"><label for="ex1-1">Identify your node ID.</label></div>
+        <div class="checkrow"><input type="checkbox" id="ex1-2"><label for="ex1-2">Identify your long name.</label></div>
+        <div class="checkrow"><input type="checkbox" id="ex1-3"><label for="ex1-3">Identify your short name.</label></div>
+        <div class="checkrow"><input type="checkbox" id="ex1-4"><label for="ex1-4">Identify your hardware type.</label></div>
+        <div class="checkrow"><input type="checkbox" id="ex1-5"><label for="ex1-5">Find another node.</label></div>
+        <div class="checkrow"><input type="checkbox" id="ex1-6"><label for="ex1-6">Determine whether it was heard directly or through the mesh.</label></div>
+        <div class="checkrow"><input type="checkbox" id="ex1-7"><label for="ex1-7">Find the channel a received message arrived on.</label></div>
+      </div>
+      <div class="progress"><div></div></div><p class="progresslabel"></p>
+    </div>
+    <p class="qual"><b>Qualification standard:</b> you can explain the difference between your phone, your node, and the mesh.</p>
+  </div>
+
+  <div class="mod" id="m2">
+    <h3><span class="n">M2</span>Channels</h3>
+    <p class="obj">Separate the LoRa radio configuration from a Meshtastic message channel.</p>
+    <p>Meshtastic supports up to eight channel slots, indexed 0 through 7. Channel 0 normally holds the primary channel.</p>
+    <h4>Primary channel</h4>
+    <p>Only one channel is PRIMARY. Periodic broadcasts such as position and telemetry normally go out on it.</p>
+    <h4>Secondary channels</h4>
+    <p>Secondary channels let more groups share the same physical LoRa configuration. <span class="rule">Changing channels does not give each channel its own frequency.</span> Every active channel uses the node's one modem configuration.</p>
+    <h4>What defines a message channel</h4>
+    <ul><li>Channel name (case-sensitive)</li><li>PSK, which controls channel encryption</li><li>Channel role</li><li>Uplink setting</li><li>Downlink setting</li></ul>
+  </div>
+
+  <div class="mod" id="m3">
+    <h3><span class="n">M3</span>Florida Mesh channel operations</h3>
+    <p>Florida Mesh documents these Meshtastic channels in addition to the primary channel:</p>
+    <div class="tablewrap"><table>
+      <thead><tr><th>Channel</th><th>Use</th></tr></thead>
+      <tbody>
+        <tr><td><code>FloridaMesh</code></td><td>Statewide chat</td></tr>
+        <tr><td><code>emergency</code></td><td>Emergency and severe weather traffic. Keep it clear.</td></tr>
+        <tr><td><code>weather</code></td><td>Weather automation</td></tr>
+        <tr><td><code>testing</code></td><td>Node, script, and bot testing</td></tr>
+        <tr><td><code>telemetry</code></td><td>Specialized infrastructure use</td></tr>
+      </tbody>
+    </table></div>
+    <p>The weekly mesh net runs on the default public primary channel, not on FloridaMesh.</p>
+    <h4>Operating rules</h4>
+    <div class="cols2">
+      <div class="callout mint"><p class="label">Passive monitoring</p><p><span class="rule">Transmit nothing.</span> You do not need to announce that you are listening.</p></div>
+      <div class="callout mint"><p class="label">Mobile monitoring</p><p>Monitor normally. If you must announce, use a general chat channel and keep it short. Do not keep broadcasting location or status by hand to show you are present.</p></div>
+      <div class="callout mint"><p class="label">Static monitoring</p><p>A stationary node can stay online and relay according to its role. Stationary does not mean it needs ROUTER or REPEATER.</p></div>
+      <div class="callout warn"><p class="label">Equipment testing</p><p>Use <code>testing</code>, a private test channel, or an accepted local procedure. Never test on <code>emergency</code>.</p></div>
+    </div>
+    <p class="fine">A community member answering "test" or "ping" with a tapback is useful evidence someone received you. It is a community habit, not a Meshtastic protocol feature.</p>
+  </div>
+
+  <div class="mod" id="m4">
+    <h3><span class="n">M4</span>Messages, ACKs, and tapbacks</h3>
+    <p class="obj">Know what a success indicator actually proves.</p>
+    <p>The Android app shows separate stages: queued by the app, queued by the radio, acknowledged by at least one mesh node, acknowledged by the intended DM recipient, and failed or not acknowledged.</p>
+    <p>For a broadcast, Meshtastic gets an <b>implicit acknowledgement</b> when it hears another node rebroadcast the packet. That proves mesh participation. It does not mean a person read it. For a direct message, the destination node returns a real acknowledgement.</p>
+    <div class="cols2">
+      <div class="callout"><p class="label">ACK</p><p>Network evidence.</p></div>
+      <div class="callout"><p class="label">Tapback</p><p>A user or application response.</p></div>
+    </div>
+    <div class="callout">
+      <p class="label">Practical exercise 2</p>
+      <p>Send one short message on an appropriate test channel. Record the time sent, the channel, whether an ACK appeared, how long it took, and whether anyone replied or tapped back.</p>
+      <p>Do not resend just because nobody answered socially.</p>
+    </div>
+  </div>
+
+  <div class="mod" id="m5">
+    <h3><span class="n">M5</span>Device roles</h3>
+    <p>One of the most important operating topics.</p>
+    <div class="tablewrap"><table>
+      <thead><tr><th>Role</th><th>What it does</th><th>When to use it</th></tr></thead>
+      <tbody>
+        <tr><td><code>CLIENT</code></td><td>Sends, receives, takes part in relaying, works with apps.</td><td>The default for most operators.</td></tr>
+        <tr><td><code>CLIENT_MUTE</code></td><td>Communicates but does not relay other nodes' packets.</td><td>Several of your nodes sit close together, such as a roof node, a desk node, and a portable on one property.</td></tr>
+        <tr><td><code>CLIENT_BASE</code></td><td>Prioritizes rebroadcasting your other personal (favorited) nodes.</td><td>A well-placed home station supporting your weaker personal gear.</td></tr>
+        <tr><td><code>ROUTER</code> / <code>REPEATER</code></td><td>Infrastructure roles.</td><td>Only for planned infrastructure. Not because a node is stationary, on a roof, has a better antenna, stays powered, or you want more range.</td></tr>
+      </tbody>
+    </table></div>
+    <p>Florida Mesh recommends <code>CLIENT</code>, <code>CLIENT_BASE</code>, or <code>CLIENT_MUTE</code> for normal nodes. Meshtastic's own docs warn that using ROUTER or REPEATER unnecessarily can cause serious network issues.</p>
+    <p class="qual"><b>Qualification question:</b> you install a Heltec V3 permanently in your attic. Should you change it to ROUTER? <b>No.</b> A stationary location alone does not justify an infrastructure role.</p>
+  </div>
+</section>
+
+<section class="card block" id="b2">
+  <div class="blockhead"><span class="roman">BLOCK II</span><h2>Radio operator</h2></div>
+
+  <div class="mod" id="m6">
+    <h3><span class="n">M6</span>Region, preset, frequency, and hops</h3>
+    <h4>Region</h4>
+    <p>The device must use the correct regulatory region. The example log shows <code>US</code>. Meshtastic documents the US LoRa range as 902 to 928 MHz.</p>
+    <h4>Modem preset</h4>
+    <p>Presets set the major LoRa traits: speed, range, airtime, and network capacity. The default is <b>LongFast</b>. Slower presets use more airtime, so slower is not automatically better.</p>
+    <h4>Florida presets</h4>
+    <ul><li>LongFast for most of Florida.</li><li>MediumFast for designated parts of the southeast coast.</li><li>Brevard County is an overlap, dual-preset area.</li></ul>
+    <p>Check the Florida Mesh regional settings before changing your preset.</p>
+    <h4>Frequency slot</h4>
+    <p>The slot sets the actual RF frequency inside the band. The example log reports 906.875 MHz, the North American LongFast default. Do not change slots casually. Two radios with matching channel names and keys still fail if their LoRa settings differ.</p>
+    <h4>Hop limit</h4>
+    <p>The default is <b>3</b>, and Meshtastic strongly recommends leaving it there unless you have a specific need. The example log shows <code>HopLim=3</code> throughout.</p>
+    <div class="callout">
+      <p class="label">Practical exercise 3: baseline configuration sheet</p>
+      <p>Record these from your node and keep the sheet. It is your known-good baseline.</p>
+      <div class="fields" data-form="baseline">
+        <div class="field"><label for="bl-region">Region</label><input id="bl-region" placeholder="US"></div>
+        <div class="field"><label for="bl-preset">Modem preset</label><input id="bl-preset" placeholder="LongFast"></div>
+        <div class="field"><label for="bl-slot">Frequency slot</label><input id="bl-slot" placeholder="default (906.875 MHz)"></div>
+        <div class="field"><label for="bl-hops">Hop limit</label><input id="bl-hops" placeholder="3"></div>
+        <div class="field"><label for="bl-primary">Primary channel</label><input id="bl-primary" placeholder="LongFast (default)"></div>
+        <div class="field"><label for="bl-role">Device role</label><input id="bl-role" placeholder="CLIENT"></div>
+      </div>
+      <div class="actions" style="margin-top:10px"><button class="btn small" type="button" data-copyform="baseline">Copy sheet</button><button class="btn ghost small" type="button" data-clearform="baseline">Clear</button><span class="copied" aria-live="polite"></span></div>
+      <p class="fine">Saved only in this browser. Do not enter keys, passwords, or your location.</p>
+    </div>
+  </div>
+
+  <div class="mod" id="m7">
+    <h3><span class="n">M7</span>RF and antenna fundamentals</h3>
+    <p>Many apparent Meshtastic problems are really RF installation problems.</p>
+    <ol>
+      <li><span class="rule">Never transmit without the correct antenna attached.</span> Meshtastic warns that reflected RF energy from a missing or badly mismatched antenna can damage the radio.</li>
+      <li><span class="rule">Correct frequency matters.</span> For US and Florida use, fit an antenna designed for the 915 MHz band.</li>
+      <li><span class="rule">Height and surroundings matter.</span> Buildings, terrain, vegetation, orientation, line of sight, and Fresnel-zone blockage all affect range. A better location often beats a higher-gain antenna.</li>
+      <li><span class="rule">Coax has loss.</span> A long cable can eat the gain you wanted from an outdoor antenna. Putting the whole node outside often works better than a long run from indoors.</li>
+      <li><span class="rule">VSWR does not tell the whole story.</span> A VNA shows whether an antenna is reasonably matched. It does not prove the antenna radiates efficiently.</li>
+    </ol>
+    <div class="callout">
+      <p class="label">Range-test procedure</p>
+      <p>Record the test location, distance, ACK or no ACK, direct or multi-hop, RSSI and SNR if available, antenna, and antenna position.</p>
+      <p><b>Change one thing at a time.</b> If you change antenna, preset, power, and location together, you cannot know which change helped.</p>
+    </div>
+    <p class="fine">The RF Bench Lab's <a href="../index.html#link">link budget module</a> has a Meshtastic preset for working through LoRa range math.</p>
+  </div>
+
+  <div class="mod" id="m8">
+    <h3><span class="n">M8</span>RSSI, SNR, and noise</h3>
+    <div class="cols2">
+      <div class="callout"><p class="label">RSSI</p><p>Received signal power.</p></div>
+      <div class="callout"><p class="label">Noise floor</p><p>Background RF energy at the receiver. More negative means a quieter environment.</p></div>
+      <div class="callout"><p class="label">SNR</p><p>How far the signal stands above the noise. LoRa can decode signals with negative SNR.</p></div>
+    </div>
+    <p><span class="rule">Do not judge a Meshtastic link from RSSI alone.</span> The apps expose signal info, telemetry, traceroute, and local stats that help judge RF quality.</p>
+    <p>One local-stats sample in the example log shows channel utilization near 0%, TX airtime near 0.05%, and a noise floor near −100 dBm. That is a quiet moment, not proof the channel is always quiet.</p>
+  </div>
+</section>
+
+<section class="card block" id="b3">
+  <div class="blockhead"><span class="roman">BLOCK III</span><h2>MQTT gateway operator</h2></div>
+
+  <div class="mod" id="m9">
+    <h3><span class="n">M9</span>What MQTT changes</h3>
+    <p>MQTT links Meshtastic networks over IP. A node with Wi-Fi, Ethernet, or client-proxy connectivity can send packets to an MQTT broker and receive permitted traffic back. That creates two paths that can coexist:</p>
+    <div class="path">RF path: node → LoRa → other radio nodes</div>
+    <div class="path">Internet path: node → Wi-Fi or client → MQTT broker → other gateways and nodes</div>
+  </div>
+
+  <div class="mod" id="m10">
+    <h3><span class="n">M10</span>MQTT uplink vs downlink</h3>
+    <p>Mandatory knowledge.</p>
+    <div class="cols2">
+      <div class="callout"><p class="label">Uplink</p><p><b>Mesh → MQTT.</b> Your node forwards channel traffic toward the broker.</p></div>
+      <div class="callout"><p class="label">Downlink</p><p><b>MQTT → Mesh.</b> Broker traffic can be delivered to the node and channel.</p></div>
+    </div>
+    <p>Both are set <b>per channel</b>. Florida Mesh's gateway configuration documents different policies per channel:</p>
+    <div class="tablewrap"><table>
+      <thead><tr><th>Channel</th><th>Uplink</th><th>Downlink</th></tr></thead>
+      <tbody>
+        <tr><td>Primary (LongFast)</td><td>On</td><td>Normally off</td></tr>
+        <tr><td>FloridaMesh</td><td>On</td><td>On</td></tr>
+        <tr><td>emergency</td><td>On</td><td>On</td></tr>
+        <tr><td>testing, weather</td><td>On</td><td>Normally off</td></tr>
+      </tbody>
+    </table></div>
+  </div>
+
+  <div class="mod" id="m11">
+    <h3><span class="n">M11</span>Reading MQTT in a log</h3>
+    <p><code>MQTT connected</code> proves the device reached the broker at that moment. After a test message, the example log shows an MQTT publish to the FloridaMesh topic:</p>
+    <div class="path">phone → local node → MQTT module → Florida broker</div>
+    <p>Packets marked <code>via MQTT</code> prove broker downlink traffic is arriving.</p>
+    <div class="callout warn">
+      <p class="label">Critical distinction</p>
+      <p><code>MQTT Publish</code> proves your node handed a packet to MQTT. It does not prove another person received it, another radio heard it over RF, or anyone read it or will reply.</p>
+      <p><b>MQTT connected ≠ RF path confirmed.</b> Know which system you are testing.</p>
+    </div>
+  </div>
+
+  <div class="mod" id="m12">
+    <h3><span class="n">M12</span>Proper MQTT test method</h3>
+    <p>Decide what you are testing first. These are four different tests.</p>
+    <div class="tablewrap"><table>
+      <thead><tr><th>Test</th><th>Question</th><th>Evidence</th></tr></thead>
+      <tbody>
+        <tr><td>A</td><td>Can my device connect to MQTT?</td><td><code>MQTT connected</code></td></tr>
+        <tr><td>B</td><td>Can my device uplink?</td><td>One test packet and a matching MQTT publish</td></tr>
+        <tr><td>C</td><td>Can I receive downlink?</td><td>Received packets marked as arriving through MQTT</td></tr>
+        <tr><td>D</td><td>Can another person or node interact with me?</td><td>A short tapback or reply through the community test procedure</td></tr>
+      </tbody>
+    </table></div>
+    <p>Do not keep transmitting the same message once Test A has already answered Test A.</p>
+  </div>
+
+  <div class="mod" id="m13">
+    <h3><span class="n">M13</span>Florida Mesh MQTT configuration</h3>
+    <div class="cols2">
+      <div><h4>LoRa</h4><ul><li>Correct regional preset</li><li>Hop limit 3</li><li>OK to MQTT on</li></ul></div>
+      <div><h4>MQTT</h4><ul><li>Florida broker address</li><li>Your own account credentials</li><li>Encryption on</li><li>JSON normally off</li><li>Florida root topic</li><li>Map reporting as appropriate</li></ul></div>
+    </div>
+    <p>For mobile feeders, Florida Mesh documents turning on <b>Proxy to Client</b> so the radio can use the phone's connection. For long-term stationary feeding, a Wi-Fi or Ethernet feeder is better than relying on a Bluetooth-tethered phone.</p>
+    <p class="fine">Current values, including the broker address and account sign-up, are in the <a href="https://areyoumeshingwith.us/docs/meshtastic/configuration/" target="_blank" rel="noopener">Florida Mesh configuration guide ↗</a>. Florida Mesh requires an account to feed MQTT.</p>
+  </div>
+</section>
+
+<section class="card block" id="b4">
+  <div class="blockhead"><span class="roman">BLOCK IV</span><h2>Device maintenance</h2></div>
+
+  <div class="mod" id="m14">
+    <h3><span class="n">M14</span>Firmware management</h3>
+    <p>Meshtastic recommends the latest <b>Beta</b> firmware for most operators. Alpha builds trade stability for newer features.</p>
+    <p>For ESP32 devices like the Heltec V3, the <a href="https://flasher.meshtastic.org" target="_blank" rel="noopener">Web Flasher ↗</a> is the normal method. Use Chrome or Edge and connect by USB.</p>
+    <p>Back up first. The Python CLI can export the configuration with <code>meshtastic --export-config</code>. A full wipe and reinstall can erase configuration, channels, and keys.</p>
+    <div class="callout">
+      <p class="label">Maintenance principle</p>
+      <p>Do not update just because a version number changed that morning.</p>
+      <ol><li>Review the release information.</li><li>Decide whether it matters for your hardware and use.</li><li>Back up.</li><li>Verify the correct hardware target.</li><li>Flash or update.</li><li>Verify region and channels.</li><li>Verify messaging.</li><li>Verify MQTT if used.</li><li>Keep the backup.</li></ol>
+    </div>
+  </div>
+
+  <div class="mod" id="m15">
+    <h3><span class="n">M15</span>Reading a Meshtastic log</h3>
+    <p>A debug log is easier once you sort entries by subsystem. Common tags:</p>
+    <p><code>[RadioIf]</code> <code>[Router]</code> <code>[ServerAPI]</code> <code>[DeviceTelemetry]</code> <code>[Power]</code> <code>[WifiConnect]</code> <code>[mqtt]</code> <code>[WebServer]</code> <code>[Screen]</code></p>
+    <p>A WARN or ERROR string is not proof the radio failed. Ask: <b>which subsystem generated it, and did operation continue afterward?</b></p>
+  </div>
+
+  <div class="mod" id="m16">
+    <h3><span class="n">M16</span>Normal events in the example log</h3>
+    <div class="tablewrap"><table>
+      <thead><tr><th>Event</th><th>Log evidence</th><th>Reading</th></tr></thead>
+      <tbody>
+        <tr><td>Boot and config load</td><td>Stored config and a large NodeDB load</td><td>Normal</td></tr>
+        <tr><td>Region selection</td><td><code>Wanted region 1, using US</code></td><td>Normal</td></tr>
+        <tr><td>Radio init</td><td><code>Frequency set to 906.875000</code></td><td>Normal for this config</td></tr>
+        <tr><td>Wi-Fi</td><td>Association and an IP address</td><td>Normal</td></tr>
+        <tr><td>NTP</td><td>Network time obtained</td><td>Normal</td></tr>
+        <tr><td>MQTT</td><td>Successful connection</td><td>Normal</td></tr>
+        <tr><td>Telemetry</td><td>Voltage, utilization, uptime</td><td>Normal</td></tr>
+        <tr><td>Radio busy</td><td><code>Can not send yet, busyRx</code></td><td>The radio was receiving during a transmit attempt. Transient, not a hardware fault.</td></tr>
+        <tr><td>Retransmissions</td><td>Repeats after the MQTT test</td><td>Reliability behavior. The packet had not yet met its ACK condition.</td></tr>
+      </tbody>
+    </table></div>
+  </div>
+
+  <div class="mod" id="m17">
+    <h3><span class="n">M17</span>Items worth monitoring</h3>
+    <h4>Low heap</h4>
+    <p><code>Low heap (... bytes), skipping HTTPS processing</code> comes from the WebServer subsystem. The firmware protects itself by skipping HTTPS work when memory runs low. It does not prove LoRa failed. It matters when it comes with an unstable web interface, app disconnects, unexplained reboots, MQTT instability, or other memory symptoms. Record it and correlate before changing configuration.</p>
+    <h4>NodeDB capacity</h4>
+    <p>When the database reaches about 200 nodes, an old entry is removed. That is normal capacity management. Favoriting important nodes helps, because favorites get special retention.</p>
+    <h4>Wi-Fi disconnects</h4>
+    <ol><li>Did Wi-Fi reconnect?</li><li>Did MQTT reconnect?</li><li>Was LoRa still operating?</li><li>Was it a network change or a real node reset?</li></ol>
+    <p>Separate an IP networking problem from a LoRa problem.</p>
+    <h4>Missing configuration files</h4>
+    <p>Boot messages may show errors for files such as the UI configuration. In the example capture the node boots and runs anyway. Investigate only if the related function fails, not because the word ERROR appears.</p>
+  </div>
+
+  <div class="mod" id="m18">
+    <h3><span class="n">M18</span>Critical fault recognition</h3>
+    <p>Meshtastic documents specific critical error conditions. These deserve far more attention than a routine subsystem warning.</p>
+    <div class="tablewrap"><table>
+      <thead><tr><th>Code</th><th>Meaning</th><th>Start with</th></tr></thead>
+      <tbody>
+        <tr><td><code>Brownout</code></td><td>CPU voltage dropped too low</td><td>Battery, USB supply, cable, regulator, load</td></tr>
+        <tr><td><code>NoRadio</code></td><td>LoRa hardware not detected</td><td>Hardware target, board, radio module</td></tr>
+        <tr><td><code>TransmitFailed</code> / <code>SX1262Failure</code></td><td>Possible radio hardware or communication failure</td><td>Antenna history, radio module, hardware</td></tr>
+        <tr><td>Flash corruption</td><td>Recoverable or unrecoverable</td><td>Backup, reflash per docs</td></tr>
+      </tbody>
+    </table></div>
+  </div>
+</section>
+
+<section class="card block" id="b5">
+  <div class="blockhead"><span class="roman">BLOCK V</span><h2>Operating procedures</h2></div>
+
+  <div class="mod" id="m19">
+    <div class="checkhead"><h3><span class="n">M19</span>Pre-operation checklist</h3><button class="btn ghost small" type="button" data-reset="preop">Reset</button></div>
+    <p>Before taking a node into service:</p>
+    <div class="checklist" data-checklist="preop">
+      <div class="checkrow"><input type="checkbox" id="po-1"><label for="po-1">Antenna connected.</label></div>
+      <div class="checkrow"><input type="checkbox" id="po-2"><label for="po-2">Antenna appropriate for the operating frequency.</label></div>
+      <div class="checkrow"><input type="checkbox" id="po-3"><label for="po-3">Battery or external power checked.</label></div>
+      <div class="checkrow"><input type="checkbox" id="po-4"><label for="po-4">Region correct.</label></div>
+      <div class="checkrow"><input type="checkbox" id="po-5"><label for="po-5">Regional modem preset correct.</label></div>
+      <div class="checkrow"><input type="checkbox" id="po-6"><label for="po-6">Frequency slot correct.</label></div>
+      <div class="checkrow"><input type="checkbox" id="po-7"><label for="po-7">Hop limit appropriate.</label></div>
+      <div class="checkrow"><input type="checkbox" id="po-8"><label for="po-8">Device role appropriate.</label></div>
+      <div class="checkrow"><input type="checkbox" id="po-9"><label for="po-9">Primary channel correct.</label></div>
+      <div class="checkrow"><input type="checkbox" id="po-10"><label for="po-10">Required secondary channels loaded.</label></div>
+      <div class="checkrow"><input type="checkbox" id="po-11"><label for="po-11">Emergency channel not being used for testing.</label></div>
+      <div class="checkrow"><input type="checkbox" id="po-12"><label for="po-12">Bluetooth or Wi-Fi connection working as required.</label></div>
+      <div class="checkrow"><input type="checkbox" id="po-13"><label for="po-13">MQTT enabled only if needed.</label></div>
+      <div class="checkrow"><input type="checkbox" id="po-14"><label for="po-14">GPS and position privacy settings reviewed.</label></div>
+      <div class="checkrow"><input type="checkbox" id="po-15"><label for="po-15">Node name recognizable.</label></div>
+      <div class="checkrow"><input type="checkbox" id="po-16"><label for="po-16">Firmware version recorded.</label></div>
+    </div>
+    <div class="progress"><div></div></div><p class="progresslabel"></p>
+  </div>
+
+  <div class="mod" id="m20">
+    <h3><span class="n">M20</span>Mobile operations SOP</h3>
+    <ol>
+      <li>Use CLIENT unless there is a defined reason not to.</li>
+      <li>Confirm the regional preset before travel.</li>
+      <li>Keep the antenna upright and clear of major obstructions where practical.</li>
+      <li>Avoid unnecessary automated broadcasts.</li>
+      <li>Use the normal mesh for real communication.</li>
+      <li>Use testing or private channels for deliberate tests.</li>
+      <li>Never use the emergency channel for routine status or testing.</li>
+      <li>For mobile MQTT, client proxy may be appropriate.</li>
+      <li>Remember that phone and Bluetooth internet is separate from LoRa.</li>
+      <li>Record meaningful range observations instead of sending repeated test traffic.</li>
+    </ol>
+  </div>
+
+  <div class="mod" id="m21">
+    <h3><span class="n">M21</span>Static / home node SOP</h3>
+    <ol>
+      <li>Favor height and RF position.</li>
+      <li>Use a reliable power supply.</li>
+      <li>Keep coax short if you use an external antenna.</li>
+      <li>Start with CLIENT.</li>
+      <li>Consider CLIENT_BASE when it specifically supports your personal nodes.</li>
+      <li>Use CLIENT_MUTE for redundant nearby nodes where it fits.</li>
+      <li>Do not pick ROUTER or REPEATER just because the node is permanent.</li>
+      <li>If it feeds MQTT, verify Wi-Fi and broker connectivity.</li>
+      <li>Check uptime and unexpected resets periodically.</li>
+      <li>Keep a configuration backup.</li>
+    </ol>
+  </div>
+
+  <div class="mod" id="m22">
+    <h3><span class="n">M22</span>Troubleshooting workflow</h3>
+    <p>Never start troubleshooting by changing five settings.</p>
+    <ol>
+      <li><b>Define the failure.</b> Bad: "Meshtastic isn't working." Good: "I receive RF messages but my node is not publishing to MQTT."</li>
+      <li><b>Find the layer.</b>
+        <div class="tablewrap" style="margin-top:6px"><table>
+          <thead><tr><th>Layer</th><th>Question</th></tr></thead>
+          <tbody>
+            <tr><td>Hardware / power</td><td>Does the node boot reliably?</td></tr>
+            <tr><td>Client link</td><td>Can the phone or computer connect?</td></tr>
+            <tr><td>LoRa</td><td>Can you receive or transmit RF packets?</td></tr>
+            <tr><td>Channel</td><td>Are name, key, and settings correct?</td></tr>
+            <tr><td>Routing</td><td>Can the target be reached?</td></tr>
+            <tr><td>Internet</td><td>Does the node have Wi-Fi or client connectivity?</td></tr>
+            <tr><td>MQTT</td><td>Is the broker connected and publishing?</td></tr>
+          </tbody>
+        </table></div>
+      </li>
+      <li><b>Check the log</b> for the relevant subsystem.</li>
+      <li><b>Change one variable:</b> move the antenna, reconnect Wi-Fi, fix one channel setting, restart MQTT, or try another power cable.</li>
+      <li><b>Retest</b> and record the result.</li>
+      <li><b>Escalate only when the evidence requires it.</b> Do not factory-reset a working radio because one message lacked an ACK.</li>
+    </ol>
+  </div>
+
+  <div class="mod" id="m23">
+    <h3><span class="n">M23</span>Traceroute</h3>
+    <p>Traceroute shows the path used to reach another node. Modern firmware adds SNR along the path. Use it to check reachability, see which intermediate nodes took part, compare forward and reverse routes, and find a weak hop.</p>
+    <p>Traceroute creates traffic. Use it deliberately, not continuously.</p>
+  </div>
+
+  <div class="mod" id="m24">
+    <h3><span class="n">M24</span>Florida weekly mesh net</h3>
+    <p>Florida Mesh runs a weekly net on <b>Mondays</b>: 7:00 PM local in Northwest Florida, 8:00 PM local in North, Central, and South Florida. It runs two hours. The Meshtastic net is on the <b>default public primary channel</b>.</p>
+    <div class="path">(NAME) - (CITY) #FLMeshNet message 1</div>
+    <p>Increment the message number with each check-in. The net exercises infrastructure and measures range, which makes it a good controlled training environment: known activity, many stations, ACK comparisons, gateway reception data, and geographic observations.</p>
+    <div class="callout">
+      <div class="checkhead"><p class="label">Training exercise during a net</p><button class="btn ghost small" type="button" data-reset="net">Reset</button></div>
+      <div class="checklist" data-checklist="net">
+        <div class="checkrow"><input type="checkbox" id="net-1"><label for="net-1">Send the prescribed check-in.</label></div>
+        <div class="checkrow"><input type="checkbox" id="net-2"><label for="net-2">Record the ACK result.</label></div>
+        <div class="checkrow"><input type="checkbox" id="net-3"><label for="net-3">Record nodes and messages received.</label></div>
+        <div class="checkrow"><input type="checkbox" id="net-4"><label for="net-4">Note any directly heard nodes.</label></div>
+        <div class="checkrow"><input type="checkbox" id="net-5"><label for="net-5">Compare with normal non-net conditions.</label></div>
+        <div class="checkrow"><input type="checkbox" id="net-6"><label for="net-6">Review the Florida Mesh net results afterward.</label></div>
+      </div>
+      <div class="progress"><div></div></div><p class="progresslabel"></p>
+    </div>
+    <p class="fine">Schedule from the <a href="https://areyoumeshingwith.us/docs/general/weekly-mesh-net/" target="_blank" rel="noopener">Florida Mesh weekly net page ↗</a>. Confirm there before a net.</p>
+  </div>
+</section>
+
+<section class="card block" id="b6">
+  <div class="blockhead"><span class="roman">BLOCK VI</span><h2>Maintenance program</h2></div>
+  <div class="cols2">
+    <div>
+      <div class="checkhead"><h3>Daily / before use</h3><button class="btn ghost small" type="button" data-reset="daily">Reset</button></div>
+      <div class="checklist" data-checklist="daily">
+        <div class="checkrow"><input type="checkbox" id="d-1"><label for="d-1">Antenna</label></div>
+        <div class="checkrow"><input type="checkbox" id="d-2"><label for="d-2">Power</label></div>
+        <div class="checkrow"><input type="checkbox" id="d-3"><label for="d-3">Correct region and preset</label></div>
+        <div class="checkrow"><input type="checkbox" id="d-4"><label for="d-4">App connection</label></div>
+        <div class="checkrow"><input type="checkbox" id="d-5"><label for="d-5">Obvious device errors</label></div>
+      </div>
+      <div class="progress"><div></div></div><p class="progresslabel"></p>
+    </div>
+    <div>
+      <div class="checkhead"><h3>Weekly</h3><button class="btn ghost small" type="button" data-reset="weekly">Reset</button></div>
+      <div class="checklist" data-checklist="weekly">
+        <div class="checkrow"><input type="checkbox" id="w-1"><label for="w-1">Uptime</label></div>
+        <div class="checkrow"><input type="checkbox" id="w-2"><label for="w-2">Battery behavior</label></div>
+        <div class="checkrow"><input type="checkbox" id="w-3"><label for="w-3">Unexpected resets</label></div>
+        <div class="checkrow"><input type="checkbox" id="w-4"><label for="w-4">RF reception</label></div>
+        <div class="checkrow"><input type="checkbox" id="w-5"><label for="w-5">MQTT connection, if used</label></div>
+        <div class="checkrow"><input type="checkbox" id="w-6"><label for="w-6">Significant log warnings</label></div>
+      </div>
+      <div class="progress"><div></div></div><p class="progresslabel"></p>
+    </div>
+    <div>
+      <div class="checkhead"><h3>Monthly</h3><button class="btn ghost small" type="button" data-reset="monthly">Reset</button></div>
+      <div class="checklist" data-checklist="monthly">
+        <div class="checkrow"><input type="checkbox" id="mo-1"><label for="mo-1">Firmware release status</label></div>
+        <div class="checkrow"><input type="checkbox" id="mo-2"><label for="mo-2">Configuration backup</label></div>
+        <div class="checkrow"><input type="checkbox" id="mo-3"><label for="mo-3">Antenna and enclosure condition</label></div>
+        <div class="checkrow"><input type="checkbox" id="mo-4"><label for="mo-4">Connectors</label></div>
+        <div class="checkrow"><input type="checkbox" id="mo-5"><label for="mo-5">Cables</label></div>
+        <div class="checkrow"><input type="checkbox" id="mo-6"><label for="mo-6">Weather sealing</label></div>
+        <div class="checkrow"><input type="checkbox" id="mo-7"><label for="mo-7">Power supply</label></div>
+        <div class="checkrow"><input type="checkbox" id="mo-8"><label for="mo-8">Node role</label></div>
+        <div class="checkrow"><input type="checkbox" id="mo-9"><label for="mo-9">Telemetry intervals</label></div>
+        <div class="checkrow"><input type="checkbox" id="mo-10"><label for="mo-10">MQTT settings</label></div>
+      </div>
+      <div class="progress"><div></div></div><p class="progresslabel"></p>
+    </div>
+    <div>
+      <div class="checkhead"><h3>After any major change</h3><button class="btn ghost small" type="button" data-reset="after">Reset</button></div>
+      <div class="checklist" data-checklist="after">
+        <div class="checkrow"><input type="checkbox" id="a-1"><label for="a-1">Boot</label></div>
+        <div class="checkrow"><input type="checkbox" id="a-2"><label for="a-2">Client connection</label></div>
+        <div class="checkrow"><input type="checkbox" id="a-3"><label for="a-3">LoRa receive</label></div>
+        <div class="checkrow"><input type="checkbox" id="a-4"><label for="a-4">LoRa transmit</label></div>
+        <div class="checkrow"><input type="checkbox" id="a-5"><label for="a-5">ACK</label></div>
+        <div class="checkrow"><input type="checkbox" id="a-6"><label for="a-6">DM, if required</label></div>
+        <div class="checkrow"><input type="checkbox" id="a-7"><label for="a-7">MQTT connection</label></div>
+        <div class="checkrow"><input type="checkbox" id="a-8"><label for="a-8">MQTT uplink</label></div>
+        <div class="checkrow"><input type="checkbox" id="a-9"><label for="a-9">MQTT downlink, if enabled</label></div>
+      </div>
+      <div class="progress"><div></div></div><p class="progresslabel"></p>
+    </div>
+  </div>
+
+  <h3 id="changelog">Configuration change log</h3>
+  <p>Keep a short record for every change. It prevents "it worked before, but I don't remember what I changed."</p>
+  <div class="fields" data-form="changelog">
+    <div class="field"><label for="cl-date">Date</label><input id="cl-date" type="date"></div>
+    <div class="field"><label for="cl-fw">Firmware</label><input id="cl-fw" placeholder="2.7.x beta"></div>
+    <div class="field"><label for="cl-role">Device role</label><input id="cl-role" placeholder="CLIENT"></div>
+    <div class="field"><label for="cl-region">Region</label><input id="cl-region" placeholder="US"></div>
+    <div class="field"><label for="cl-preset">Preset</label><input id="cl-preset" placeholder="LongFast"></div>
+    <div class="field"><label for="cl-slot">Frequency slot</label><input id="cl-slot"></div>
+    <div class="field"><label for="cl-hops">Hop limit</label><input id="cl-hops" placeholder="3"></div>
+    <div class="field"><label for="cl-ch">Channels changed</label><input id="cl-ch"></div>
+    <div class="field"><label for="cl-mqtt">MQTT changed</label><input id="cl-mqtt"></div>
+    <div class="field"><label for="cl-phys">Physical changes</label><input id="cl-phys"></div>
+    <div class="field"><label for="cl-why">Reason</label><input id="cl-why"></div>
+    <div class="field"><label for="cl-result">Test result</label><input id="cl-result"></div>
+  </div>
+  <div class="actions" style="margin-top:10px"><button class="btn small" type="button" data-copyform="changelog">Copy entry</button><button class="btn ghost small" type="button" data-clearform="changelog">Clear</button><span class="copied" aria-live="polite"></span></div>
+  <p class="fine">Saved only in this browser until you clear it. Paste entries into your own log. Never record passwords or channel keys here.</p>
+</section>
+
+<section class="card" id="security">
+  <h2>Security module: logs and credentials</h2>
+  <p>Debug logs can contain MQTT usernames and passwords in plain text. Treat every log as sensitive.</p>
+  <p>Before sharing a log:</p>
+  <ul>
+    <li>Redact MQTT usernames where appropriate.</li>
+    <li>Redact MQTT passwords.</li>
+    <li>Redact Wi-Fi credentials if present.</li>
+    <li>Check for precise location information.</li>
+    <li>Check for private channel names and keys.</li>
+  </ul>
+  <div class="callout warn"><p>If a password has ever appeared in a shared log, rotate it through Florida Mesh's MQTT account procedure and do not reuse it.</p></div>
+</section>
+
+<section class="card matrix" id="matrix">
+  <h2>Operator decision matrix</h2>
+  <div class="cols2">
+    <div class="callout"><h3>"I don't see any messages."</h3><ol><li>Correct region</li><li>Regional preset</li><li>Frequency slot</li><li>Antenna</li><li>Channels</li><li>Physical location</li><li>Whether anyone nearby is actually transmitting</li></ol></div>
+    <div class="callout"><h3>"My message isn't acknowledged."</h3><p>Do not change configuration first. Check:</p><ol><li>Whether reachable nodes exist</li><li>RF environment</li><li>Antenna and location</li><li>Whether retries occur</li><li>Whether other messages work</li></ol></div>
+    <div class="callout"><h3>"MQTT isn't working."</h3><ol><li>Internet connection</li><li>MQTT enabled</li><li>Server</li><li>Credentials</li><li>Root topic</li><li>Channel uplink and downlink</li><li>Log for <code>MQTT connected</code></li><li>Log for publish and received-topic events</li></ol></div>
+    <div class="callout"><h3>"The map doesn't show me."</h3><p>Check Florida Mesh's requirements:</p><ul><li>OK to MQTT</li><li>A feeder in range, or your own gateway</li><li>Map reporting configuration</li><li>Location precision</li><li>MQTT configuration</li></ul></div>
+    <div class="callout"><h3>"I have poor range."</h3><ol><li>Antenna frequency</li><li>Antenna quality</li><li>Antenna orientation</li><li>Height</li><li>Buildings and terrain</li><li>Cable loss</li><li>SNR and noise</li><li>Actual path testing</li></ol><p><b>Do not start by raising the hop limit.</b></p></div>
+  </div>
+</section>
+
+<section class="card" id="exam">
+  <div class="checkhead"><h2>Final practical exam</h2><button class="btn ghost small" type="button" data-reset="exam">Reset</button></div>
+  <p>Complete all eight phases without changing undocumented settings at random.</p>
+  <div class="checklist" data-checklist="exam">
+    <div class="checkrow"><input type="checkbox" id="ex-1"><label for="ex-1"><b>Phase 1, identify.</b> Show node ID, hardware, firmware, region, role, preset, hop limit, and primary channel.</label></div>
+    <div class="checkrow"><input type="checkbox" id="ex-2"><label for="ex-2"><b>Phase 2, local communication.</b> Send an appropriate test broadcast and explain the ACK status.</label></div>
+    <div class="checkrow"><input type="checkbox" id="ex-3"><label for="ex-3"><b>Phase 3, direct communication.</b> DM a known reachable node. Explain how its ACK differs from a broadcast ACK.</label></div>
+    <div class="checkrow"><input type="checkbox" id="ex-4"><label for="ex-4"><b>Phase 4, RF diagnostics.</b> Identify RSSI, SNR, hop count, and whether the node was heard directly. Run one traceroute if appropriate.</label></div>
+    <div class="checkrow"><input type="checkbox" id="ex-5"><label for="ex-5"><b>Phase 5, MQTT.</b> Show a broker connection, an uplink, and a received MQTT packet if downlink is on. Explain why these do not prove RF delivery.</label></div>
+    <div class="checkrow"><input type="checkbox" id="ex-6"><label for="ex-6"><b>Phase 6, log analysis.</b> Find and explain telemetry, a radio transmit, an MQTT publish, an MQTT receive, a retransmission, a Wi-Fi event, and a warning.</label></div>
+    <div class="checkrow"><input type="checkbox" id="ex-7"><label for="ex-7"><b>Phase 7, maintenance.</b> Produce a current configuration backup and explain how you would update firmware safely.</label></div>
+    <div class="checkrow"><input type="checkbox" id="ex-8"><label for="ex-8"><b>Phase 8, troubleshooting.</b> The app connects and local RF messaging works, but the Florida MQTT map stopped updating. Do not touch the LoRa preset first. Investigate internet, MQTT connection, credentials, map reporting, uplink settings, and logs.</label></div>
+  </div>
+  <div class="progress"><div></div></div><p class="progresslabel"></p>
+</section>
+
+<section class="card" id="knowledge">
+  <div class="scorebar"><h2 style="margin:0">Knowledge check</h2><div class="actions"><span class="score" id="kscore">0 / 12</span><button class="btn ghost small" type="button" id="kreset">Reset answers</button></div></div>
+  <p class="fine">Pick an answer to see the explanation. Answers stay in this browser.</p>
+  <div class="quiz" id="quiz"></div>
+  <details class="box" style="margin-top:14px">
+    <summary>Answer key</summary>
+    <ol>
+      <li>No.</li>
+      <li>No.</li>
+      <li>Three, in normal default operation.</li>
+      <li>Uplink is mesh to broker. Downlink is broker to mesh.</li>
+      <li>No.</li>
+      <li>No.</li>
+      <li>Reflected RF energy can damage the transmitter.</li>
+      <li>Antenna, location, regional configuration, RF environment, and the actual problem.</li>
+      <li>Signal quality relative to noise.</li>
+      <li>A wipe or reinstall may remove configuration and keys.</li>
+      <li>You lose the ability to tell which change mattered.</li>
+      <li>Define precisely what is failing.</li>
+    </ol>
+  </details>
+</section>
+
+<section class="card" id="standard">
+  <h2>Operator qualification standard</h2>
+  <p>You are ready to operate your Meshtastic equipment on your own when you can reliably answer:</p>
+  <p class="qual"><b>What path is this packet using?</b> Phone or client, local node, LoRa RF, relay, MQTT, or some combination.</p>
+  <p>You are ready to maintain it when you can also answer:</p>
+  <p class="qual"><b>What changed, what evidence do I have, and which subsystem should I test next?</b></p>
+  <p>That distinction, more than memorizing every setting, is the core skill of a competent mesh operator.</p>
+</section>
+
+<section class="card" id="sources">
+  <h2>Sources and tools</h2>
+  <p>Built from Meshtastic's glossary, configuration, hardware and antenna, software, firmware, and error-code documentation, Florida Mesh operating documentation, and one Heltec V3 debug log. Settings change between releases, so confirm against the live docs.</p>
+  <ul>
+    <li><a href="https://client.meshtastic.org" target="_blank" rel="noopener">Meshtastic web client</a>: connect to a node over USB serial or Bluetooth from Chrome or Edge.</li>
+    <li><a href="https://meshtastic.org/docs" target="_blank" rel="noopener">Meshtastic documentation</a></li>
+    <li><a href="https://meshtastic.org/docs/configuration/tips/" target="_blank" rel="noopener">Meshtastic configuration tips and device roles</a></li>
+    <li><a href="https://meshtastic.org/blog/choosing-the-right-device-role/" target="_blank" rel="noopener">Meshtastic blog: choosing the right device role</a></li>
+    <li><a href="https://flasher.meshtastic.org" target="_blank" rel="noopener">Meshtastic Web Flasher</a></li>
+    <li><a href="https://areyoumeshingwith.us/docs/meshtastic/configuration/" target="_blank" rel="noopener">Florida Mesh node configuration</a></li>
+    <li><a href="https://areyoumeshingwith.us/docs/general/weekly-mesh-net/" target="_blank" rel="noopener">Florida Mesh weekly net</a></li>
+    <li><a href="https://map.areyoumeshingwith.us/" target="_blank" rel="noopener">Florida Mesh map</a></li>
+  </ul>
+</section>
+
+    </div>
+  </div>
+</main>
+<div class="hubfoot" role="contentinfo"><div class="hubfoot-in"><p>Radio Hub · static pages, offline after first visit, no tracking. Public tower and repeater data only; verify before relying on any listing.</p><p><a href="index.html#privacy">What this site leaves out</a> · <a href="https://github.com/tanks3c/rf-bench-lab/tree/main/hub" target="_blank" rel="noopener">Source</a></p></div></div>
+<script>
+'use strict';
+(function(){
+const KEY='radiohub.mesh.v1';
+let st={checks:{},forms:{},answers:{}};
+try{const s=JSON.parse(localStorage.getItem(KEY)||'null');if(s&&typeof s==='object'){st.checks=s.checks||{};st.forms=s.forms||{};st.answers=s.answers||{};}}catch(e){}
+const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(st));}catch(e){}};
+
+/* checklists */
+document.querySelectorAll('[data-checklist]').forEach(list=>{
+  const group=list.dataset.checklist;
+  const boxes=Array.from(list.querySelectorAll('input[type=checkbox]'));
+  let host=list.parentElement,bar=null,lab=null;
+  for(let n=list.nextElementSibling;n;n=n.nextElementSibling){if(n.classList.contains('progress'))bar=n.firstElementChild;if(n.classList.contains('progresslabel')){lab=n;break;}}
+  const paint=()=>{const done=boxes.filter(b=>b.checked).length;if(bar)bar.style.width=(100*done/boxes.length)+'%';if(lab)lab.textContent=done+' of '+boxes.length+' complete';};
+  boxes.forEach(b=>{b.checked=!!st.checks[b.id];b.addEventListener('change',()=>{st.checks[b.id]=b.checked;save();paint();});});
+  paint();
+  list._paint=()=>{boxes.forEach(b=>b.checked=!!st.checks[b.id]);paint();};
+  list._reset=()=>{boxes.forEach(b=>{delete st.checks[b.id];b.checked=false;});save();paint();};
+});
+document.querySelectorAll('[data-reset]').forEach(btn=>btn.addEventListener('click',()=>{const l=document.querySelector(`[data-checklist="${btn.dataset.reset}"]`);if(l&&l._reset)l._reset();}));
+
+/* forms: local draft + copy */
+document.querySelectorAll('[data-form]').forEach(form=>{
+  const name=form.dataset.form;const inputs=Array.from(form.querySelectorAll('input,textarea,select'));
+  const saved=st.forms[name]||{};
+  inputs.forEach(i=>{if(saved[i.id]!=null)i.value=saved[i.id];i.addEventListener('input',()=>{(st.forms[name]=st.forms[name]||{})[i.id]=i.value;save();});});
+});
+async function copy(text){try{await navigator.clipboard.writeText(text);return true;}catch(e){return false;}}
+document.querySelectorAll('[data-copyform]').forEach(btn=>btn.addEventListener('click',async()=>{
+  const form=document.querySelector(`[data-form="${btn.dataset.copyform}"]`);
+  const title=btn.dataset.copyform==='baseline'?'MESHTASTIC BASELINE CONFIGURATION':'MESHTASTIC CONFIGURATION CHANGE LOG';
+  const lines=[title].concat(Array.from(form.querySelectorAll('.field')).map(f=>{const l=f.querySelector('label').textContent;const v=f.querySelector('input,textarea,select').value.trim();return l+': '+v;}));
+  const ok=await copy(lines.join('\n'));
+  const msg=btn.parentElement.querySelector('.copied');if(msg){msg.textContent=ok?'Copied.':'Copy blocked. Select the fields and copy manually.';setTimeout(()=>msg.textContent='',2500);}
+}));
+document.querySelectorAll('[data-clearform]').forEach(btn=>{let armed=0;btn.addEventListener('click',()=>{
+  if(!armed){btn.textContent='Tap again to clear';armed=setTimeout(()=>{armed=0;btn.textContent='Clear';},3000);return;}
+  clearTimeout(armed);armed=0;btn.textContent='Clear';
+  const form=document.querySelector(`[data-form="${btn.dataset.clearform}"]`);form.querySelectorAll('input,textarea,select').forEach(i=>i.value='');delete st.forms[btn.dataset.clearform];save();
+});});
+
+/* knowledge check */
+const Q=[
+ {p:'Does an ACK mean a human read your message?',o:['Yes, an ACK means the recipient read it','No. An ACK is network evidence, not proof a person read it','Only on the emergency channel','Only when the hop limit is 3'],a:1,w:'An ACK shows the network handled the packet. A broadcast ACK can come from any node rebroadcasting it. A DM ACK comes from the destination node, which is still not a person reading it.',m:'m4'},
+ {p:'Should a stationary node automatically be set to ROUTER?',o:['No. Location alone does not justify an infrastructure role','Yes, every permanent node should be ROUTER','Yes, if it has an external antenna','Only in Florida'],a:0,w:'Unneeded ROUTER and REPEATER roles add congestion. Start with CLIENT, and use CLIENT_BASE or CLIENT_MUTE where they fit.',m:'m5'},
+ {p:'What is the normal Meshtastic hop limit?',o:['1','3','5','7'],a:1,w:'The default is 3, and Meshtastic strongly recommends leaving it there unless you have a specific need.',m:'m6'},
+ {p:'What is the difference between MQTT uplink and downlink?',o:['They are the same setting','Uplink is Bluetooth; downlink is Wi-Fi','Uplink is mesh to broker; downlink is broker to mesh','Uplink is broker to mesh; downlink is mesh to broker'],a:2,w:'Uplink forwards mesh traffic to the broker. Downlink delivers broker traffic into the mesh. Both are set per channel.',m:'m10'},
+ {p:'Does "MQTT connected" prove another LoRa radio heard you?',o:['Yes, it confirms the RF path','Yes, if JSON is enabled','Only on LongFast','No. It only proves the broker connection'],a:3,w:'MQTT connected means the IP path to the broker works. It says nothing about the RF path.',m:'m11'},
+ {p:'Should you test equipment on the emergency channel?',o:['No. Use testing or a private test channel','Yes, it gets the fastest response','Only during the weekly net','Only if you request a tapback'],a:0,w:'Florida Mesh asks operators to keep emergency clear and to put test traffic on testing or a private channel.',m:'m3'},
+ {p:'Why should you not transmit without an antenna?',o:['It drains the battery faster','It changes the frequency slot','Reflected RF energy can damage the transmitter','It breaks MQTT'],a:2,w:'With no antenna or a bad mismatch, transmitted energy reflects back into the radio and can damage it.',m:'m7'},
+ {p:'What should you check before raising transmit power?',o:['Nothing. More power always helps','Only the firmware version','Only the hop limit','Antenna, location, regional configuration, RF environment, and the actual problem'],a:3,w:'Power rarely fixes a bad antenna, a poor location, or a wrong preset. Find the real problem first.',m:'m22'},
+ {p:'What does SNR tell you that RSSI alone cannot?',o:['Signal quality relative to noise','Battery level','Number of hops','MQTT topic'],a:0,w:'RSSI is raw received power. SNR shows how far the signal stands above the noise, and LoRa can decode even below zero SNR.',m:'m8'},
+ {p:'Why back up configuration before major firmware work?',o:['Backups make flashing faster','The flasher requires a backup file','A wipe or reinstall can remove configuration, channels, and keys','It resets the hop limit'],a:2,w:'A full wipe can erase channels and keys. meshtastic --export-config saves them.',m:'m14'},
+ {p:'Why is changing several settings at once bad troubleshooting?',o:['It voids the warranty','You cannot tell which change mattered','It increases airtime','The app blocks it'],a:1,w:'One variable at a time is the only way to know what fixed or broke something.',m:'m22'},
+ {p:'What is the first step when diagnosing a failure?',o:['Factory reset the node','Raise the hop limit','Switch to ROUTER','Define precisely what is failing'],a:3,w:'"I receive RF but my node is not publishing to MQTT" points to a layer. "It isn\'t working" points nowhere.',m:'m22'}
+];
+const quiz=document.getElementById('quiz');
+function score(){document.getElementById('kscore').textContent=Q.filter((q,i)=>st.answers[i]===q.a).length+' / '+Q.length;}
+Q.forEach((q,i)=>{
+  const d=document.createElement('div');d.className='q';
+  d.innerHTML=`<div class="q-n">Q${i+1}</div><p class="q-p"></p><div class="opts"></div><p class="why" hidden></p>`;
+  d.querySelector('.q-p').textContent=q.p;
+  const opts=d.querySelector('.opts');
+  q.o.forEach((t,j)=>{const b=document.createElement('button');b.type='button';b.className='opt';b.textContent=t;b.addEventListener('click',()=>{if(st.answers[i]!==undefined)return;st.answers[i]=j;save();paint();score();});opts.appendChild(b);});
+  function paint(){
+    const ans=st.answers[i],btns=d.querySelectorAll('.opt'),why=d.querySelector('.why');
+    if(ans===undefined){btns.forEach(b=>{b.disabled=false;b.classList.remove('right','wrong');});why.hidden=true;return;}
+    btns.forEach((b,j)=>{b.disabled=true;b.classList.toggle('right',j===q.a);b.classList.toggle('wrong',j===ans&&ans!==q.a);});
+    why.hidden=false;why.innerHTML=`<span class="${ans===q.a?'v-ok':'v-no'}">${ans===q.a?'Correct.':'Not quite.'}</span> `;
+    why.appendChild(document.createTextNode(q.w+' '));
+    const a=document.createElement('a');a.href='#'+q.m;a.textContent='Review module '+q.m.slice(1);why.appendChild(a);
+  }
+  d._paint=paint;paint();quiz.appendChild(d);
+});
+score();
+const kr=document.getElementById('kreset');let karm=0;
+kr.addEventListener('click',()=>{if(!karm){kr.textContent='Tap again to confirm';karm=setTimeout(()=>{karm=0;kr.textContent='Reset answers';},3000);return;}clearTimeout(karm);karm=0;kr.textContent='Reset answers';st.answers={};save();quiz.querySelectorAll('.q').forEach(q=>q._paint());score();});
+
+/* collapse contents on small screens after a jump */
+const td=document.getElementById('tocdetails');
+if(matchMedia('(max-width:900px)').matches)td.open=false;
+td.addEventListener('click',e=>{if(e.target.tagName==='A'&&matchMedia('(max-width:900px)').matches)td.open=false;});
+})();
+</script>
+<script src="assets/hub.js" defer></script>
+</body>
+</html>

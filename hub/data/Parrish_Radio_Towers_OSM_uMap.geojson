@@ -1,0 +1,667 @@
+{
+  "type": "FeatureCollection",
+  "name": "Parrish area radio and communications towers",
+  "licenseNote": "Location points compiled from public sources; per-pin source listed. OSM contributions where used are © OpenStreetMap contributors (ODbL).",
+  "features": [
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -82.412861,
+          27.724444
+        ]
+      },
+      "properties": {
+        "name": "7th Ave NE · 1510 tower",
+        "category": "Communications / antenna",
+        "description": "Historic Verizon / Crown Castle antenna record near 15th St NE.",
+        "record_status": "Historical listing",
+        "source": "https://www.city-data.com/towers/cell-Ruskin-Florida.html",
+        "_umap_options": {
+          "color": "#687581"
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -82.368861,
+          27.7755
+        ]
+      },
+      "properties": {
+        "name": "Big Bend Rd tower · 7599",
+        "category": "Communications / antenna",
+        "description": "Historical American Tower facility in Apollo Beach, approximately 123 m.",
+        "record_status": "Historical listing",
+        "source": "https://www.city-data.com/towers/cell-Ruskin-Florida.html",
+        "_umap_options": {
+          "color": "#687581"
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -82.338083,
+          27.595139
+        ]
+      },
+      "properties": {
+        "name": "East Parrish wireless tower",
+        "category": "Communications / antenna",
+        "description": "Historic Sprintcom record near SR 62; may represent a separate site from 19725 SR 62.",
+        "record_status": "Historical listing",
+        "source": "https://www.city-data.com/towers/cell-Parrish-Florida.html",
+        "_umap_options": {
+          "color": "#687581"
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -82.444667,
+          27.581917
+        ]
+      },
+      "properties": {
+        "name": "Erie Road tower · 11376 Erie Rd",
+        "category": "Communications / antenna",
+        "description": "Historical records mention American Towers and other past registrants. Reported height about 75 m.",
+        "record_status": "Historical listing",
+        "source": "https://www.city-data.com/towers/cell-Parrish-Florida.html",
+        "_umap_options": {
+          "color": "#687581"
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -82.474222,
+          27.571556
+        ]
+      },
+      "properties": {
+        "name": "Erie Road · 8905",
+        "category": "Communications / antenna",
+        "description": "Historical Anthemnet record. Height about 59 m.",
+        "record_status": "Historical listing",
+        "source": "https://www.city-data.com/towers/cell-Parrish-Florida.html",
+        "_umap_options": {
+          "color": "#687581"
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -82.382222,
+          27.714167
+        ]
+      },
+      "properties": {
+        "name": "I-75 / CR 674 Florida state tower",
+        "category": "Communications / antenna",
+        "description": "Historical State of Florida registration at I-75 / CR 674 interchange; specific current radio services not verified.",
+        "record_status": "Historical listing",
+        "source": "https://www.city-data.com/towers/cell-Ruskin-Florida.html",
+        "_umap_options": {
+          "color": "#687581"
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -82.504722,
+          27.691667
+        ]
+      },
+      "properties": {
+        "name": "Leisey Shell Pit Rd tower",
+        "category": "Communications / antenna",
+        "description": "Historical Motorola registration 438 ft west of Leisey Shell Pit Road, approximately 122 m.",
+        "record_status": "Historical listing",
+        "source": "https://www.city-data.com/towers/cell-Ruskin-Florida.html",
+        "_umap_options": {
+          "color": "#687581"
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -82.50191667,
+          27.53266667
+        ]
+      },
+      "properties": {
+        "name": "Little Country Rd licensed tower",
+        "category": "Licensed radio facility",
+        "description": "2100 Little Country Road; FCC ULS record WQAH347 has frequency 217.875 MHz, listed tower 13.7 m.",
+        "record_status": "FCC ULS record",
+        "source": "https://fcc.report/ULS/2625041",
+        "_umap_options": {
+          "color": "#22a067"
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -82.369972,
+          27.482639
+        ]
+      },
+      "properties": {
+        "name": "Manatee County communications tower",
+        "category": "Communications / antenna",
+        "description": "Historical Clearshot Communications registration (no confirmed radio system).",
+        "record_status": "Historical listing",
+        "source": "https://www.city-data.com/towers/cell-Parrish-Florida.html",
+        "_umap_options": {
+          "color": "#687581"
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -82.43680556,
+          27.54630556
+        ]
+      },
+      "properties": {
+        "name": "River Wilderness Blvd licensed tower",
+        "category": "Licensed radio facility",
+        "description": "2901 River Wilderness Blvd; FCC ULS record WQAH347 has frequency 217.875 MHz, listed tower 13.7 m.",
+        "record_status": "FCC ULS record",
+        "source": "https://fcc.report/ULS/2625041",
+        "_umap_options": {
+          "color": "#22a067"
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -82.43055556,
+          27.53558333
+        ]
+      },
+      "properties": {
+        "name": "River Wilderness Blvd W licensed tower",
+        "category": "Licensed radio facility",
+        "description": "2510 River Wilderness Blvd W; FCC ULS record WQAH347 has frequency 217.875 MHz, listed tower 13.7 m.",
+        "record_status": "FCC ULS record",
+        "source": "https://fcc.report/ULS/2625041",
+        "_umap_options": {
+          "color": "#22a067"
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -82.426611,
+          27.731194
+        ]
+      },
+      "properties": {
+        "name": "Ruskin tower · 1105 NE 3rd St",
+        "category": "Communications / antenna",
+        "description": "Historical American Towers antenna structure, height estimates vary across records.",
+        "record_status": "Historical listing",
+        "source": "https://www.city-data.com/towers/cell-Ruskin-Florida.html",
+        "_umap_options": {
+          "color": "#687581"
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -82.413694,
+          27.693917
+        ]
+      },
+      "properties": {
+        "name": "Ruskin tower · 1507 SE 21st Ave",
+        "category": "Communications / antenna",
+        "description": "Historical American Tower facility, roughly 122 m. Duplicate listings consolidated.",
+        "record_status": "Historical listing",
+        "source": "https://www.city-data.com/towers/cell-Ruskin-Florida.html",
+        "_umap_options": {
+          "color": "#687581"
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -82.397028,
+          27.697722
+        ]
+      },
+      "properties": {
+        "name": "Ruskin tower · 1800 27th St SE",
+        "category": "Communications / antenna",
+        "description": "Historical American Towers facility, roughly 122 m.",
+        "record_status": "Historical listing",
+        "source": "https://www.city-data.com/towers/cell-Ruskin-Florida.html",
+        "_umap_options": {
+          "color": "#687581"
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -82.408056,
+          27.565556
+        ]
+      },
+      "properties": {
+        "name": "Spencer Road · 5200",
+        "category": "Communications / antenna",
+        "description": "Historical 1 Source Towers registration; height about 60 m.",
+        "record_status": "Historical listing",
+        "source": "https://www.city-data.com/towers/cell-Parrish-Florida.html",
+        "_umap_options": {
+          "color": "#687581"
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -82.409722,
+          27.585528
+        ]
+      },
+      "properties": {
+        "name": "Spencer-Parrish Road antenna",
+        "category": "Communications / antenna",
+        "description": "Historical Anthemnet record; height about 59 m.",
+        "record_status": "Historical listing",
+        "source": "https://www.city-data.com/towers/cell-Parrish-Florida.html",
+        "_umap_options": {
+          "color": "#687581"
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -82.336556,
+          27.59425
+        ]
+      },
+      "properties": {
+        "name": "SR 62 tower · 19725 SR 62",
+        "category": "Communications / antenna",
+        "description": "Listed for historic Sprint / STC wireless infrastructure. Reported height about 76 m.",
+        "record_status": "Historical listing",
+        "source": "https://www.city-data.com/towers/cell-Parrish-Florida.html",
+        "_umap_options": {
+          "color": "#687581"
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -82.397222,
+          27.585556
+        ]
+      },
+      "properties": {
+        "name": "SR 62 tower · west Parrish",
+        "category": "Communications / antenna",
+        "description": "Historical American Tower registration. Reported height about 91 m.",
+        "record_status": "Historical listing",
+        "source": "https://www.city-data.com/towers/cell-Parrish-Florida.html",
+        "_umap_options": {
+          "color": "#687581"
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -82.289806,
+          27.477417
+        ]
+      },
+      "properties": {
+        "name": "SR 64 / CR 675 tower",
+        "category": "Communications / antenna",
+        "description": "Historical Acme Towers registration, near the SR 64 and CR 675 intersection.",
+        "record_status": "Historical listing",
+        "source": "https://www.city-data.com/towers/cell-Parrish-Florida.html",
+        "_umap_options": {
+          "color": "#687581"
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -82.436944,
+          27.705833
+        ]
+      },
+      "properties": {
+        "name": "Tamiami Tr S tower · 1519",
+        "category": "Communications / antenna",
+        "description": "Historic AT&T / Landlink site, approximately 71 m.",
+        "record_status": "Historical listing",
+        "source": "https://www.city-data.com/towers/cell-Ruskin-Florida.html",
+        "_umap_options": {
+          "color": "#687581"
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -82.437028,
+          27.706611
+        ]
+      },
+      "properties": {
+        "name": "Tamiami Trail S tower · 1410",
+        "category": "Communications / antenna",
+        "description": "Historic Main Site LLC listing near 1519 Tamiami South. Potentially co-located; mapped separately based on differing listed positions.",
+        "record_status": "Historical listing",
+        "source": "https://www.city-data.com/towers/cell-Ruskin-Florida.html",
+        "_umap_options": {
+          "color": "#687581"
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -82.426944,
+          27.613889
+        ]
+      },
+      "properties": {
+        "name": "US 301 N tower · 12415 US 301",
+        "category": "Communications / antenna",
+        "description": "Historical Bellsouth / Cingular site. Reported height about 77.7 m.",
+        "record_status": "Historical listing",
+        "source": "https://www.city-data.com/towers/cell-Parrish-Florida.html",
+        "_umap_options": {
+          "color": "#687581"
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -82.389639,
+          27.80025
+        ]
+      },
+      "properties": {
+        "name": "US 41 S tower · 12979",
+        "category": "Communications / antenna",
+        "description": "Historical T-Mobile / Crown Castle tower listing.",
+        "record_status": "Historical listing",
+        "source": "https://www.city-data.com/towers/cell-Ruskin-Florida.html",
+        "_umap_options": {
+          "color": "#687581"
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -82.480278,
+          27.673611
+        ]
+      },
+      "properties": {
+        "name": "US 41 South tower · 4422",
+        "category": "Communications / antenna",
+        "description": "Historic T-Mobile / Crown Castle record, approximately 50 m.",
+        "record_status": "Historical listing",
+        "source": "https://www.city-data.com/towers/cell-Ruskin-Florida.html",
+        "_umap_options": {
+          "color": "#687581"
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -82.436806,
+          27.660278
+        ]
+      },
+      "properties": {
+        "name": "Valroy Rd tower · 3201",
+        "category": "Communications / antenna",
+        "description": "Historical AT&T / Crown Castle records. Height about 58-61 m.",
+        "record_status": "Historical listing",
+        "source": "https://www.city-data.com/towers/cell-Ruskin-Florida.html",
+        "_umap_options": {
+          "color": "#687581"
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -82.495444,
+          27.653361
+        ]
+      },
+      "properties": {
+        "name": "Valroy Rd tower · 4646",
+        "category": "Communications / antenna",
+        "description": "Historical AT&T cellular tower registration. Height about 63 m.",
+        "record_status": "Historical listing",
+        "source": "https://www.city-data.com/towers/cell-Ruskin-Florida.html",
+        "_umap_options": {
+          "color": "#687581"
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -82.5920421,
+          27.4639291
+        ]
+      },
+      "properties": {
+        "name": "WAYP-FM historical tower",
+        "category": "AM / FM broadcast",
+        "description": "Historic WAYP-FM Holmes Beach tower listing.",
+        "record_status": "USGS/GNIS landmark",
+        "source": "https://www.anyplaceamerica.com/directory/fl/manatee-county-12081/towers/",
+        "_umap_options": {
+          "color": "#e98d00"
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -82.5742638,
+          27.5453147
+        ]
+      },
+      "properties": {
+        "name": "WDUV-FM / WBRD-AM historical site",
+        "category": "AM / FM broadcast",
+        "description": "The USGS/GNIS listing has WDUV-FM and WBRD-AM at this same point; deduplicated into one site.",
+        "record_status": "USGS/GNIS landmark",
+        "source": "https://www.anyplaceamerica.com/directory/fl/manatee-county-12081/towers/",
+        "_umap_options": {
+          "color": "#e98d00"
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -82.4514836,
+          27.5958687
+        ]
+      },
+      "properties": {
+        "name": "WDUV-FM historical tower · N Parrish",
+        "category": "AM / FM broadcast",
+        "description": "Historic USGS/OSM tower named WDUV-FM (Bradenton); call sign/site use may have changed.",
+        "record_status": "OSM/GNIS landmark",
+        "source": "https://mapcarta.com/20699078",
+        "_umap_options": {
+          "color": "#e98d00"
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -82.2498129,
+          27.408654
+        ]
+      },
+      "properties": {
+        "name": "WHVE-FM historical tower",
+        "category": "AM / FM broadcast",
+        "description": "Historic WHVE-FM Sarasota tower listing. Not proof of current transmitter operation.",
+        "record_status": "USGS/GNIS landmark",
+        "source": "https://www.anyplaceamerica.com/directory/fl/manatee-county-12081/towers/",
+        "_umap_options": {
+          "color": "#e98d00"
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -82.5734305,
+          27.5003167
+        ]
+      },
+      "properties": {
+        "name": "WKLV-AM historical tower",
+        "category": "AM / FM broadcast",
+        "description": "Historic WKLV-AM Bradenton site listing.",
+        "record_status": "USGS/GNIS landmark",
+        "source": "https://www.anyplaceamerica.com/directory/fl/manatee-county-12081/towers/",
+        "_umap_options": {
+          "color": "#e98d00"
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -82.5723194,
+          27.4958724
+        ]
+      },
+      "properties": {
+        "name": "WTRL historical radio tower",
+        "category": "AM / FM broadcast",
+        "description": "Historical USGS/GNIS tower name WTRL Radio Tower.",
+        "record_status": "USGS/GNIS landmark",
+        "source": "https://www.anyplaceamerica.com/directory/fl/manatee-county-12081/towers/",
+        "_umap_options": {
+          "color": "#e98d00"
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -82.36333333333333,
+          27.55611111111111
+        ]
+      },
+      "properties": {
+        "name": "WWSB-TV transmission site · Rye Rd",
+        "category": "TV broadcast",
+        "description": "CR 678 at Rye Road. FCCInfo lists ASR 1028035, approximately 230.4 m structure / 248.1 m overall.",
+        "record_status": "FCC license record (2026)",
+        "source": "https://fccinfo.com/CMDProULSLookup.php?tabSearchType=UMIB&tabTextBox1=991039",
+        "_umap_options": {
+          "color": "#a94ab6"
+        }
+      }
+    }
+  ]
+}

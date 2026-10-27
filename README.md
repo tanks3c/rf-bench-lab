@@ -4,6 +4,8 @@ An interactive, browser-based lab for the FCC Technician exam (2026-2030 pool) a
 
 Live: https://tanks3c.github.io/rf-bench-lab/
 
+Radio Hub: https://tanks3c.github.io/rf-bench-lab/hub/ (landing page tying together this lab, an LMR field toolkit, a Meshtastic O&M course, Parrish-area tower and repeater maps, and a Manatee County tower inventory; see `hub/`).
+
 ## Modules
 
 1. RF math: wavelength, decibels, dBm, Ohm's law
